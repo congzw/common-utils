@@ -4,6 +4,25 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Common
 {
     [TestClass]
+    public class SimpleLogSpec
+    {
+        [TestMethod]
+        public void Log_Should_LogByLevel()
+        {
+            var simpleLog = SimpleLogFactory.Resolve().Create("Foo");
+            simpleLog.EnabledLevel = SimpleLogLevel.Information;
+
+            simpleLog.ShouldLog(SimpleLogLevel.Trace).ShouldFalse();
+            simpleLog.ShouldLog(SimpleLogLevel.Debug).ShouldFalse();
+
+            simpleLog.ShouldLog(SimpleLogLevel.Information).ShouldTrue();
+            simpleLog.ShouldLog(SimpleLogLevel.Warning).ShouldTrue();
+            simpleLog.ShouldLog(SimpleLogLevel.Error).ShouldTrue();
+            simpleLog.ShouldLog(SimpleLogLevel.Critical).ShouldTrue();
+        }
+    }
+
+    [TestClass]
     public class SimpleLogFactorySpec
     {
         [TestMethod]
