@@ -41,7 +41,7 @@ namespace Common
 
         protected virtual void LogMessage(object message, SimpleLogLevel level)
         {
-            Trace.WriteLine(string.Format("[{0}][{1}][{2}] {3}", "SimpleLog", Category, level.ToString(), message));
+            Trace.WriteLine(string.Format("{0} [{1}][{2}] {3}", Category, "SimpleLog", level.ToString(), message));
         }
     }
     
@@ -51,6 +51,17 @@ namespace Common
         {
             return level >= simpleLog.EnabledLevel;
         }
+
+        public static void LogInfo(this ISimpleLog simpleLog, string message)
+        {
+            simpleLog.Log(message, SimpleLogLevel.Information);
+        }
+
+        public static void LogEx(this ISimpleLog simpleLog, Exception ex, string message = null)
+        {
+            var logMessage = string.Format("{0} => {1}", message ?? ex.Message, ex.StackTrace);
+            simpleLog.Log(logMessage, SimpleLogLevel.Error);
+        }
     }
 
     #region factory and settings
@@ -58,6 +69,7 @@ namespace Common
     public interface ISimpleLogFactory
     {
         ISimpleLog Create(string category);
+        ISimpleLog GetOrCreate(string category);
     }
 
     public class SimpleLogFactory : ISimpleLogFactory
@@ -65,7 +77,10 @@ namespace Common
         public SimpleLogFactory(SimpleLogSettings settings)
         {
             Settings = settings;
+            SimpleLogs = new ConcurrentDictionary<string, ISimpleLog>(StringComparer.OrdinalIgnoreCase);
         }
+
+        public IDictionary<string, ISimpleLog> SimpleLogs { get; set; }
 
         public SimpleLogSettings Settings { get; set; }
 
@@ -74,6 +89,19 @@ namespace Common
             var tryFixCategory = Settings.TryFixCategory(category);
             var simpleLogLevel = Settings.GetEnabledLevel(tryFixCategory);
             return new SimpleLog() { Category = tryFixCategory, EnabledLevel = simpleLogLevel };
+        }
+
+        public ISimpleLog GetOrCreate(string category)
+        {
+            var tryFixCategory = Settings.TryFixCategory(category);
+            var tryGetValue = SimpleLogs.TryGetValue(tryFixCategory, out var theOne);
+            if (!tryGetValue || theOne == null)
+            {
+                theOne = Create(tryFixCategory);
+                SimpleLogs.Add(tryFixCategory, theOne);
+            }
+
+            return theOne;
         }
 
         #region for di extensions
@@ -166,17 +194,17 @@ namespace Common
     
     public static class SimpleLogFactoryExtensions
     {
-        public static ISimpleLog CreateLogFor(this SimpleLogFactory factory, Type type)
+        public static ISimpleLog CreateLogFor(this ISimpleLogFactory factory, Type type)
         {
             return factory.Create(type.Name);
         }
 
-        public static ISimpleLog CreateLogFor<T>(this SimpleLogFactory factory)
+        public static ISimpleLog CreateLogFor<T>(this ISimpleLogFactory factory)
         {
             return factory.CreateLogFor(typeof(T));
         }
 
-        public static ISimpleLog CreateLogFor(this SimpleLogFactory factory, object instance)
+        public static ISimpleLog CreateLogFor(this ISimpleLogFactory factory, object instance)
         {
             if (instance == null)
             {
@@ -187,6 +215,30 @@ namespace Common
                 return factory.CreateLogFor(type);
             }
             return factory.CreateLogFor(instance.GetType());
+        }
+
+
+        public static ISimpleLog GetOrCreateLogFor(this ISimpleLogFactory factory, Type type)
+        {
+            return factory.GetOrCreate(type.FullName);
+        }
+
+        public static ISimpleLog GetOrCreateLogFor<T>(this ISimpleLogFactory factory)
+        {
+            return factory.GetOrCreateLogFor(typeof(T));
+        }
+
+        public static ISimpleLog GetOrCreateLogFor(this ISimpleLogFactory factory, object instance)
+        {
+            if (instance == null)
+            {
+                throw new ArgumentNullException(nameof(instance));
+            }
+            if (instance is Type type)
+            {
+                return factory.GetOrCreateLogFor(type);
+            }
+            return factory.GetOrCreateLogFor(instance.GetType());
         }
     }
 
