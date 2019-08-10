@@ -25,6 +25,12 @@ namespace Common
                 var delayedGroupCache = new DelayedGroupCache<MockItem>();
                 delayedGroupCache.AppendToGroups(new List<MockItem>(), null, item => item.CreateAt);
             });
+
+            AssertHelper.ShouldThrows<ArgumentNullException>(() =>
+            {
+                var delayedGroupCache = new DelayedGroupCache<MockItem>();
+                delayedGroupCache.AppendToGroups(new List<MockItem>(), item => item.GroupKey, null);
+            });
         }
 
         [TestMethod]
