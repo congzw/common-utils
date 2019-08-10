@@ -104,6 +104,34 @@ namespace Common
             CheckGroups(popExpiredGroups, itemCount, 3);
         }
 
+
+        [TestMethod]
+        public void AppendToGroups_SubClass_Should_Ok()
+        {
+            var delayedGroupCache = new DelayedMockItemGroupCache();
+            var delaySpan = TimeSpan.FromSeconds(2);
+            var groupCount = 5;
+            var itemCount = 3;
+            var spanSecond = 1;
+            var startAt = _mockNow;
+            //0:00,0:01,0:02
+            //     0:01,0:02,0:03            
+            //          0:02,0:03,0:04      
+            //               0:03,0:04,0:05      
+            //                    0:04,0:05,0:06
+            //pop at: [0:06]
+            //expired groups: early than [0:06] - 2 = [0.04] => group 0,1,2 should return
+
+            delayedGroupCache.DelaySpan = delaySpan;
+            var mockCommands = CreateGroupCommands(groupCount, itemCount, spanSecond, startAt);
+            delayedGroupCache.AppendToGroups(mockCommands);
+            var popAt = mockCommands.Max(x => x.CreateAt);
+            var popExpiredGroups = delayedGroupCache.PopExpiredGroups(popAt);
+            ShowCache(delayedGroupCache);
+            CheckGroups(popExpiredGroups, itemCount, 3);
+        }
+
+
         private void CheckGroups(IList<DelayedGroup<MockItem>> delayedGroups, int itemCount, int groupCount)
         {
             string.Format("====check group count: {0} should equal: {1}====", delayedGroups.Count, groupCount).Log();
@@ -162,6 +190,14 @@ namespace Common
         public override string ToString()
         {
             return string.Format("{0} Item {1} at {2:yyyy-MM-dd HH:mm:ss}", this.GroupKey, this.Id, this.CreateAt);
+        }
+    }
+
+    public class DelayedMockItemGroupCache : DelayedGroupCache<MockItem>
+    {
+        public void AppendToGroups(IList<MockItem> items)
+        {
+            AppendToGroups(items, item => item.GroupKey, item => item.CreateAt);
         }
     }
 }
