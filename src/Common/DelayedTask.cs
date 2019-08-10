@@ -59,10 +59,21 @@ namespace Common
             }
         }
 
-        public IList<DelayedGroup<T>> PopExpiredGroups(DateTime popAt)
+        public IList<DelayedGroup<T>> PopExpiredGroups(DateTime? popAt = null)
         {
             lock (_lock)
             {
+                if (DelayedGroups.Count == 0)
+                {
+                    return new List<DelayedGroup<T>>();
+                }
+                if (popAt == null)
+                {
+                    //DelayedGroups.Count == 0 fix max null bugs!
+                    //popAt = DelayedGroups.Values.Select(g => g.LastItemDate).DefaultIfEmpty(DateTime.MinValue).Max();
+                    popAt = DelayedGroups.Values.Select(g => g.LastItemDate).Max();
+                }
+
                 var expiredGroups = DelayedGroups.Where(x => x.Value.LastItemDate.Add(DelaySpan) <= popAt).ToList();
                 foreach (var expiredGroup in expiredGroups)
                 {

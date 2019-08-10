@@ -104,6 +104,44 @@ namespace Common
             CheckGroups(popExpiredGroups, itemCount, 3);
         }
 
+        [TestMethod]
+        public void PopExpiredGroups_ExpiredGroupsAutoGuessDate_Should_Return()
+        {
+            var delayedGroupCache = new DelayedGroupCache<MockItem>();
+            var delaySpan = TimeSpan.FromSeconds(2);
+            var groupCount = 5;
+            var itemCount = 3;
+            var spanSecond = 1;
+            var startAt = _mockNow;
+            //0:00,0:01,0:02
+            //     0:01,0:02,0:03            
+            //          0:02,0:03,0:04      
+            //               0:03,0:04,0:05      
+            //                    0:04,0:05,0:06
+            //pop at: [0:06]
+            //expired groups: early than [0:06] - 2 = [0.04] => group 0,1,2 should return
+
+            delayedGroupCache.DelaySpan = delaySpan;
+            var mockCommands = CreateGroupCommands(groupCount, itemCount, spanSecond, startAt);
+            delayedGroupCache.AppendToGroups(mockCommands, item => item.GroupKey, item => item.CreateAt);
+            //var popAt = mockCommands.Max(x => x.CreateAt);
+            var popExpiredGroups = delayedGroupCache.PopExpiredGroups(null);
+            ShowCache(delayedGroupCache);
+            CheckGroups(popExpiredGroups, itemCount, 3);
+        }
+        [TestMethod]
+        public void PopExpiredGroups_ExpiredGroupsAutoGuessDate_Empty_Should_Return_Empty()
+        {
+            var delayedGroupCache = new DelayedGroupCache<MockItem>();
+            var delaySpan = TimeSpan.FromSeconds(2);
+
+            delayedGroupCache.DelaySpan = delaySpan;
+            //var popAt = mockCommands.Max(x => x.CreateAt);
+            var popExpiredGroups = delayedGroupCache.PopExpiredGroups(null);
+            ShowCache(delayedGroupCache);
+            CheckGroups(popExpiredGroups, 0, 0);
+        }
+
 
         [TestMethod]
         public void AppendToGroups_SubClass_Should_Ok()
@@ -130,8 +168,7 @@ namespace Common
             ShowCache(delayedGroupCache);
             CheckGroups(popExpiredGroups, itemCount, 3);
         }
-
-
+        
         private void CheckGroups(IList<DelayedGroup<MockItem>> delayedGroups, int itemCount, int groupCount)
         {
             string.Format("====check group count: {0} should equal: {1}====", delayedGroups.Count, groupCount).Log();
