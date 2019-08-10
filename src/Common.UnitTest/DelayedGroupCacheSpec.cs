@@ -105,7 +105,7 @@ namespace Common
         }
 
         [TestMethod]
-        public void PopExpiredGroups_ExpiredGroupsAutoGuessDate_Should_Return()
+        public void PopExpiredGroups_AllExpiredGroups_Should_Return()
         {
             var delayedGroupCache = new DelayedGroupCache<MockItem>();
             var delaySpan = TimeSpan.FromSeconds(2);
@@ -119,25 +119,25 @@ namespace Common
             //               0:03,0:04,0:05      
             //                    0:04,0:05,0:06
             //pop at: [0:06]
-            //expired groups: early than [0:06] - 2 = [0.04] => group 0,1,2 should return
+            //expired groups: early than [0:10] - 2 = [0.08] => all group should return
 
             delayedGroupCache.DelaySpan = delaySpan;
             var mockCommands = CreateGroupCommands(groupCount, itemCount, spanSecond, startAt);
             delayedGroupCache.AppendToGroups(mockCommands, item => item.GroupKey, item => item.CreateAt);
-            //var popAt = mockCommands.Max(x => x.CreateAt);
-            var popExpiredGroups = delayedGroupCache.PopExpiredGroups(null);
+            var popAt = _mockNow.AddSeconds(10);
+            var popExpiredGroups = delayedGroupCache.PopExpiredGroups(popAt);
             ShowCache(delayedGroupCache);
-            CheckGroups(popExpiredGroups, itemCount, 3);
+            CheckGroups(popExpiredGroups, itemCount, groupCount);
         }
         [TestMethod]
-        public void PopExpiredGroups_ExpiredGroupsAutoGuessDate_Empty_Should_Return_Empty()
+        public void PopExpiredGroups_Empty_Should_Return_Empty()
         {
             var delayedGroupCache = new DelayedGroupCache<MockItem>();
             var delaySpan = TimeSpan.FromSeconds(2);
 
             delayedGroupCache.DelaySpan = delaySpan;
-            //var popAt = mockCommands.Max(x => x.CreateAt);
-            var popExpiredGroups = delayedGroupCache.PopExpiredGroups(null);
+            var popAt = _mockNow.AddSeconds(10);
+            var popExpiredGroups = delayedGroupCache.PopExpiredGroups(popAt);
             ShowCache(delayedGroupCache);
             CheckGroups(popExpiredGroups, 0, 0);
         }
