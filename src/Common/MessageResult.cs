@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-
+﻿// ReSharper disable once CheckNamespace
 namespace Common
 {
     public class MessageResult
@@ -13,9 +12,25 @@ namespace Common
             return new MessageResult() { Success = success, Message = message, Data = data };
         }
 
-        public static Task<MessageResult> CreateTask(bool success, string message, object data = null)
+        public static MessageResult MethodResult(string method, bool success, object data = null)
         {
-            return Task.FromResult(Create(success, message, data));
+            var result = new MessageResult();
+            result.Success = success;
+            result.Data = data;
+            result.Message = string.Format("{0}: {1} => {2}", method, success ? " Success" : " Fail", data);
+            return result;
+        }
+
+        public static MessageResult SuccessResult(string message, object data = null)
+        {
+            var result = new MessageResult() { Message = message, Success = true, Data = data };
+            return result;
+        }
+
+        public static MessageResult FailResult(string message, object data = null)
+        {
+            var result = new MessageResult() { Message = message, Success = false, Data = data };
+            return result;
         }
     }
 }

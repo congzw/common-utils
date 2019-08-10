@@ -197,7 +197,7 @@ namespace Common
                 Log.LogInfo("process is running? " + isRunning);
                 if (isRunning)
                 {
-                    return MessageResult.CreateTask(true, "process is already running: " + Process.Info.ProcessName);
+                    return MessageResult.Create(true, "process is already running: " + Process.Info.ProcessName).AsTask();
                 }
 
                 try
@@ -205,12 +205,12 @@ namespace Common
                     Log.LogInfo("process starting: " + Process.Info.ProcessName);
                     Process.Start();
                     Log.LogInfo("process started: " + Process.Info.ProcessName);
-                    return MessageResult.CreateTask(true, "Process start completed: " + Process.Info.ProcessName);
+                    return MessageResult.Create(true, "Process start completed: " + Process.Info.ProcessName).AsTask();
                 }
                 catch (Exception ex)
                 {
                     Log.LogEx(ex, "process start ex!");
-                    return MessageResult.CreateTask(false, "Process start failed: " + Process.Info.ProcessName);
+                    return MessageResult.Create(false, "Process start failed: " + Process.Info.ProcessName).AsTask();
                 }
             });
         }
@@ -221,19 +221,19 @@ namespace Common
             Log.LogInfo("process is running? " + isRunning);
             if (!isRunning)
             {
-                return MessageResult.CreateTask(true, "process is not running: " + Process.Info.ProcessName);
+                return MessageResult.Create(true, "process is not running: " + Process.Info.ProcessName).AsTask();
             }
             try
             {
                 Log.LogInfo("process stopping: " + Process.Info.ProcessName);
                 Process.Stop();
                 Log.LogInfo("process stopped: " + Process.Info.ProcessName);
-                return MessageResult.CreateTask(true, "Process stop completed: " + Process.Info.ProcessName);
+                return MessageResult.Create(true, "Process stop completed: " + Process.Info.ProcessName).AsTask();
             }
             catch (Exception ex)
             {
                 Log.LogEx(ex, "process stop ex!");
-                return MessageResult.CreateTask(false, "Process stop failed: " + Process.Info.ProcessName);
+                return MessageResult.Create(false, "Process stop failed: " + Process.Info.ProcessName).AsTask();
             }
         }
     }
