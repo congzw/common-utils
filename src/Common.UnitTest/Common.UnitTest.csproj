@@ -51,7 +51,7 @@
   <ItemGroup>
     <Compile Include="DelayedGroupCacheSpec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleLogFactorySpec.cs" />
+    <Compile Include="SimpleLogSpec.cs" />
     <Compile Include="SimpleProcessRunnerSpec.cs" />
     <Compile Include="_Helpers\AssertHelper.cs" />
     <Compile Include="_Helpers\AsyncHelper.cs" />
