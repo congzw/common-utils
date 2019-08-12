@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
@@ -35,14 +37,10 @@ namespace Common
         {
             if (this.ShouldLog(level))
             {
-                LogMessage(message, level);
+                var args = LogMessageArgs.Create(Category, message, level);
+                LogMessageActions.Resolve().Invoke(args);
             }
             return Task.FromResult(0);
-        }
-
-        protected virtual void LogMessage(object message, SimpleLogLevel level)
-        {
-            Trace.WriteLine(string.Format("{0} [{1}][{2}] {3}", Category, "SimpleLog", level.ToString(), message));
         }
     }
     
@@ -112,6 +110,75 @@ namespace Common
 
         #endregion
     }
+
+    #region for simple extensions used
+
+    public class LogMessageActions : Dictionary<string, LogMessageAction>
+    {
+        private static void LogMessage(LogMessageArgs args)
+        {
+            Trace.WriteLine(string.Format("{0} [{1}][{2}] {3}", args.Category, "SimpleLog", args.Level.ToString(), args.Message));
+        }
+
+        public LogMessageActions()
+        {
+            this.Add("Default", new LogMessageAction("Default", true, LogMessage));
+        }
+
+        public void Invoke(LogMessageArgs args)
+        {
+            //todo result cache?
+            var logMessageActions = this.Values.Where(x => x.Enabled).ToList();
+            foreach (var logMessageAction in logMessageActions)
+            {
+                logMessageAction.Action(args);
+            }
+        }
+
+
+        #region for simple extensions
+
+        private static readonly Lazy<LogMessageActions> LazyActions = new Lazy<LogMessageActions>(() => new LogMessageActions());
+        public static Func<LogMessageActions> Resolve { get; set; } = () => LazyActions.Value;
+
+        #endregion
+    }
+
+    public class LogMessageAction
+    {
+        public LogMessageAction(string name, bool enabled, Action<LogMessageArgs> action)
+        {
+            //todo validate
+            Name = name;
+            Enabled = enabled;
+            Action = action;
+        }
+
+        public string Name { get; set; }
+        public bool Enabled { get; set; }
+        public Action<LogMessageArgs> Action { get; set; }
+    }
+
+    public class LogMessageArgs
+    {
+        public LogMessageArgs(string category, object message, SimpleLogLevel level)
+        {
+            Category = category;
+            Message = message;
+            Level = level;
+        }
+
+        public string Category { get; set; }
+        public object Message { get; set; }
+        public SimpleLogLevel Level { get; set; }
+
+        public static LogMessageArgs Create(string category, object message, SimpleLogLevel level)
+        {
+            return new LogMessageArgs(category, message, level);
+        }
+    }
+
+    #endregion
 
     public class SimpleLogSettings
     {
