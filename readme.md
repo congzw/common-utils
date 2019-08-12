@@ -2,6 +2,7 @@
 
 ## change list
 
+- 20190812 add SimpleIni
 - 20190812 add ReflectHelper
 - 20190810 add DelayedGroupCache and spec
 - 20190810 add TaskEx and conditional compilation for Net4
