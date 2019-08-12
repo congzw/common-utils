@@ -2,6 +2,8 @@
 
 ## change list
 
+- 
+- 20190812 add AppDomainExtensions
 - 20190812 add SimpleIni
 - 20190812 add ReflectHelper
 - 20190810 add DelayedGroupCache and spec
