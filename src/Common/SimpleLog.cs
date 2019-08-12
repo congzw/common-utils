@@ -107,7 +107,7 @@ namespace Common
 
         #region for di extensions
 
-        private static Lazy<ISimpleLogFactory> LazyInstance = new Lazy<ISimpleLogFactory>(() => new SimpleLogFactory(new SimpleLogSettings()));
+        private static readonly Lazy<ISimpleLogFactory> LazyInstance = new Lazy<ISimpleLogFactory>(() => new SimpleLogFactory(new SimpleLogSettings()));
         public static Func<ISimpleLogFactory> Resolve { get; set; } = () => LazyInstance.Value;
 
         #endregion
