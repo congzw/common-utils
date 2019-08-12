@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
+// ReSharper disable once CheckNamespace
 namespace Common
 {
     //内部使用的简单日志
