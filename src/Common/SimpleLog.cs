@@ -47,7 +47,7 @@ namespace Common
                 var args = LogMessageArgs.Create(Category, message, level);
                 LogActions.Invoke(args);
             }
-            return Task.FromResult(0);
+            return 0.AsTask();
         }
     }
     
