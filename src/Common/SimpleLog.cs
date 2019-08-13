@@ -211,7 +211,7 @@ namespace Common
     {
         public static ISimpleLog CreateLogFor(this ISimpleLogFactory factory, Type type)
         {
-            return factory.Create(type.Name);
+            return factory.Create(type.FullName);
         }
 
         public static ISimpleLog CreateLogFor<T>(this ISimpleLogFactory factory)
