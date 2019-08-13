@@ -29,6 +29,13 @@ namespace Common
 
     internal class SimpleLog : ISimpleLog
     {
+        public SimpleLog(LogMessageActions actions)
+        {
+            LogActions = actions;
+        }
+
+        public LogMessageActions LogActions { get; set; }
+
         public string Category { get; set; }
 
         public SimpleLogLevel EnabledLevel { get; set; }
@@ -38,7 +45,7 @@ namespace Common
             if (this.ShouldLog(level))
             {
                 var args = LogMessageArgs.Create(Category, message, level);
-                LogMessageActions.Resolve().Invoke(args);
+                LogActions.Invoke(args);
             }
             return Task.FromResult(0);
         }
@@ -67,27 +74,32 @@ namespace Common
 
     public interface ISimpleLogFactory
     {
+        SimpleLogSettings Settings { get; set; }
+        LogMessageActions LogActions { get; set; }
+
         ISimpleLog Create(string category);
         ISimpleLog GetOrCreate(string category);
     }
 
     public class SimpleLogFactory : ISimpleLogFactory
     {
-        public SimpleLogFactory(SimpleLogSettings settings)
+        public SimpleLogFactory(SimpleLogSettings settings, LogMessageActions actions)
         {
             Settings = settings;
+            LogActions = actions;
             SimpleLogs = new ConcurrentDictionary<string, ISimpleLog>(StringComparer.OrdinalIgnoreCase);
         }
 
         public IDictionary<string, ISimpleLog> SimpleLogs { get; set; }
 
         public SimpleLogSettings Settings { get; set; }
+        public LogMessageActions LogActions { get; set; }
 
         public ISimpleLog Create(string category)
         {
             var tryFixCategory = Settings.TryFixCategory(category);
             var simpleLogLevel = Settings.GetEnabledLevel(tryFixCategory);
-            return new SimpleLog() { Category = tryFixCategory, EnabledLevel = simpleLogLevel };
+            return new SimpleLog(LogActions) { Category = tryFixCategory, EnabledLevel = simpleLogLevel };
         }
 
         public ISimpleLog GetOrCreate(string category)
@@ -99,86 +111,16 @@ namespace Common
                 theOne = Create(tryFixCategory);
                 SimpleLogs.Add(tryFixCategory, theOne);
             }
-
             return theOne;
         }
-
+        
         #region for di extensions
 
-        private static readonly Lazy<ISimpleLogFactory> LazyInstance = new Lazy<ISimpleLogFactory>(() => new SimpleLogFactory(new SimpleLogSettings()));
+        private static readonly Lazy<ISimpleLogFactory> LazyInstance = new Lazy<ISimpleLogFactory>(() => new SimpleLogFactory(new SimpleLogSettings(), new LogMessageActions()));
         public static Func<ISimpleLogFactory> Resolve { get; set; } = () => LazyInstance.Value;
 
         #endregion
     }
-
-    #region for simple extensions used
-
-    public class LogMessageActions : Dictionary<string, LogMessageAction>
-    {
-        private static void LogMessage(LogMessageArgs args)
-        {
-            Trace.WriteLine(string.Format("{0} [{1}][{2}] {3}", args.Category, "SimpleLog", args.Level.ToString(), args.Message));
-        }
-
-        public LogMessageActions()
-        {
-            this.Add("Default", new LogMessageAction("Default", true, LogMessage));
-        }
-
-        public void Invoke(LogMessageArgs args)
-        {
-            //todo result cache?
-            var logMessageActions = this.Values.Where(x => x.Enabled).ToList();
-            foreach (var logMessageAction in logMessageActions)
-            {
-                logMessageAction.Action(args);
-            }
-        }
-
-
-        #region for simple extensions
-
-        private static readonly Lazy<LogMessageActions> LazyActions = new Lazy<LogMessageActions>(() => new LogMessageActions());
-        public static Func<LogMessageActions> Resolve { get; set; } = () => LazyActions.Value;
-
-        #endregion
-    }
-
-    public class LogMessageAction
-    {
-        public LogMessageAction(string name, bool enabled, Action<LogMessageArgs> action)
-        {
-            //todo validate
-            Name = name;
-            Enabled = enabled;
-            Action = action;
-        }
-
-        public string Name { get; set; }
-        public bool Enabled { get; set; }
-        public Action<LogMessageArgs> Action { get; set; }
-    }
-
-    public class LogMessageArgs
-    {
-        public LogMessageArgs(string category, object message, SimpleLogLevel level)
-        {
-            Category = category;
-            Message = message;
-            Level = level;
-        }
-
-        public string Category { get; set; }
-        public object Message { get; set; }
-        public SimpleLogLevel Level { get; set; }
-
-        public static LogMessageArgs Create(string category, object message, SimpleLogLevel level)
-        {
-            return new LogMessageArgs(category, message, level);
-        }
-    }
-
-    #endregion
 
     public class SimpleLogSettings
     {
@@ -284,8 +226,7 @@ namespace Common
             }
             return factory.CreateLogFor(instance.GetType());
         }
-
-
+        
         public static ISimpleLog GetOrCreateLogFor(this ISimpleLogFactory factory, Type type)
         {
             return factory.GetOrCreate(type.FullName);
@@ -310,5 +251,84 @@ namespace Common
         }
     }
 
+    #endregion
+    
+    #region for simple extensions used
+
+    public class LogMessageActions : Dictionary<string, LogMessageAction>
+    {
+        private static void LogMessage(LogMessageArgs args)
+        {
+            Trace.WriteLine(string.Format("{0} [{1}][{2}] {3}", args.Category, "SimpleLog", args.Level.ToString(), args.Message));
+        }
+
+        public LogMessageActions()
+        {
+            var defaultCategory = SimpleLogSettings.DefaultCategory;
+            this.Add(defaultCategory, new LogMessageAction(defaultCategory, true, LogMessage));
+        }
+
+        public void Invoke(LogMessageArgs args)
+        {
+            //todo result cache?
+            var logMessageActions = this.Values.Where(x => x.Enabled).ToList();
+            foreach (var logMessageAction in logMessageActions)
+            {
+                logMessageAction.Action(args);
+            }
+        }
+    }
+
+    public class LogMessageAction
+    {
+        public LogMessageAction(string name, bool enabled, Action<LogMessageArgs> action)
+        {
+            //todo validate
+            Name = name;
+            Enabled = enabled;
+            Action = action;
+        }
+
+        public string Name { get; set; }
+        public bool Enabled { get; set; }
+        public Action<LogMessageArgs> Action { get; set; }
+    }
+
+    public class LogMessageArgs
+    {
+        public LogMessageArgs(string category, object message, SimpleLogLevel level)
+        {
+            Category = category;
+            Message = message;
+            Level = level;
+        }
+
+        public string Category { get; set; }
+        public object Message { get; set; }
+        public SimpleLogLevel Level { get; set; }
+
+        public static LogMessageArgs Create(string category, object message, SimpleLogLevel level)
+        {
+            return new LogMessageArgs(category, message, level);
+        }
+    }
+    
+    #region demos
+
+    //public class DemoForAsyncNotifyConfig
+    //{
+    //    public static void Setup()
+    //    {
+    //        var simpleLogFactory = SimpleLogFactory.Resolve();
+    //        var logActions = simpleLogFactory.LogActions;
+    //        logActions["AsyncNotify"] = new LogMessageAction("AsyncNotify", true, args =>
+    //        {
+    //            //todo your Async Notify code!
+    //        });
+    //    }
+    //}
+
+    #endregion
+    
     #endregion
 }
