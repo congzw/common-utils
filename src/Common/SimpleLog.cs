@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 // ReSharper disable once CheckNamespace
 namespace Common
 {
-    //内部使用的简单日志
+    //内部使用的简单日志，不依赖任何第三方类库
     public interface ISimpleLog
     {
         SimpleLogLevel EnabledLevel { get; set; }
@@ -53,9 +53,14 @@ namespace Common
     
     public static class SimpleLogExtensions
     {
-        public static bool ShouldLog(this ISimpleLog simpleLog, SimpleLogLevel level)
+        public static bool ShouldLog(this SimpleLogLevel currentLevel, SimpleLogLevel enabledLevel)
         {
-            return level >= simpleLog.EnabledLevel;
+            return currentLevel >= enabledLevel && currentLevel != SimpleLogLevel.None;
+        }
+
+        public static bool ShouldLog(this ISimpleLog simpleLog, SimpleLogLevel currentLevel)
+        {
+            return currentLevel.ShouldLog(simpleLog.EnabledLevel);
         }
 
         public static void LogInfo(this ISimpleLog simpleLog, string message)
