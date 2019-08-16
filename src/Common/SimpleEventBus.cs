@@ -7,6 +7,7 @@ namespace Common
     {
         void Register(Action<T> eventAction);
         void ClearActions();
+        void RemoveRegister(Action<T> eventAction);
         void Raise(T args);
         Func<T, bool> ShouldRaise { get; set; }
     }
@@ -31,6 +32,15 @@ namespace Common
         public void ClearActions()
         {
             Actions.Clear();
+        }
+
+        public void RemoveRegister(Action<T> eventAction)
+        {
+            if (!Actions.Contains(eventAction))
+            {
+                return;
+            }
+            Actions.Remove(eventAction);
         }
 
         public void Raise(T args)
