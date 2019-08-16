@@ -282,6 +282,12 @@ namespace Common
                 logMessageAction.Action(args);
             }
         }
+
+        public LogMessageActions SetActions(string name, bool enabled, Action<LogMessageArgs> action)
+        {
+            this[name] = new LogMessageAction(name, enabled, action);
+            return this;
+        }
     }
 
     public class LogMessageAction
