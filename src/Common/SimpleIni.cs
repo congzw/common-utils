@@ -270,7 +270,7 @@ namespace Common
         private Dictionary<string, IniSection> sections;
         public IEqualityComparer<string> StringComparer;
 
-        public bool SaveEmptySections;
+        public bool SaveEmptySections { get; set; }
 
         public IniFile()
             : this(DefaultComparer)
