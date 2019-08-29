@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common
 {
     public static class AppDomainExtensions

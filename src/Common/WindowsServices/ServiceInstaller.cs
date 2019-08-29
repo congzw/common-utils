@@ -7,7 +7,7 @@ using System.Threading;
 // ReSharper disable InconsistentNaming
 #pragma warning disable 414
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common.WindowsServices
 {
     public static class ServiceInstaller

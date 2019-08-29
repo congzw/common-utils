@@ -1,4 +1,4 @@
-﻿// ReSharper disable once CheckNamespace
+﻿// ReSharper disable CheckNamespace
 namespace Common
 {
     public class MessageResult

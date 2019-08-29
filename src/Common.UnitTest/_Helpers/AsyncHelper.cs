@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common
 {
     //this helper will prevent deadlocks and could be used within a try/catch block to get the exception raised by the AsyncMethod itself.

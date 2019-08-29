@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common
 {
     public static class TestExtensions

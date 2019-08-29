@@ -3,6 +3,7 @@
 ## change list
 
 - 
+- 20190829 ModelHelper support cross types setting
 - 20190829 fix Control.Invoke dead lock bugs
 - 20190822 add SimpleMapper
 - 20190816 add AsyncFormDemo

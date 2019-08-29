@@ -1,4 +1,4 @@
-﻿// ReSharper disable once CheckNamespace
+﻿// ReSharper disable CheckNamespace
 namespace Common
 {
     #region demo for LogWithSimpleEventBus

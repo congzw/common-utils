@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common
 {
     public interface IReflectHelper

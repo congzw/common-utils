@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common
 {
     public class SimpleProcessInfo

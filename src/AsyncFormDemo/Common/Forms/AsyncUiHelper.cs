@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common
 {
     public delegate void UpdateUiMessageDelegate(string value);

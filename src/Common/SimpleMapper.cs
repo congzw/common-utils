@@ -4,7 +4,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common
 {
     public interface ISimpleMapper

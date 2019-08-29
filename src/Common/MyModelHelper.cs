@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common
 {
     public class MyModelHelper
@@ -138,18 +138,27 @@ namespace Common
             }
 
             //获取类型信息
-            Type t = toBeUpdated.GetType();
-            PropertyInfo[] propertyInfos = t.GetProperties();
+            Type toBeUpdatedType = toBeUpdated.GetType();
+            PropertyInfo[] propertyInfos = toBeUpdatedType.GetProperties();
             IList<string> fixedProperties = excludeProperties ?? new string[] { };
 
-            foreach (PropertyInfo propertyInfo in propertyInfos)
+            var propertyValues = GetKeyValueDictionary(getFrom);
+            foreach (var excludeProperty in fixedProperties)
             {
-                if (fixedProperties.Any(x => x.Equals(propertyInfo.Name, StringComparison.OrdinalIgnoreCase)))
+                if (propertyValues.ContainsKey(excludeProperty))
                 {
-                    continue;
+                    propertyValues.Remove(excludeProperty);
                 }
-                object value = propertyInfo.GetValue(getFrom, null);
-                propertyInfo.SetValue(toBeUpdated, value, null);
+            }
+
+
+            foreach (var propertyValue in propertyValues)
+            {
+                var propertyInfo = propertyInfos.SingleOrDefault(x => propertyValue.Key.Equals(x.Name, StringComparison.OrdinalIgnoreCase));
+                if (propertyInfo != null)
+                {
+                    propertyInfo.SetValue(toBeUpdated, propertyValue.Value, null);
+                }
             }
         }
 

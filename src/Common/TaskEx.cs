@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Common
 {
     public static class TaskEx
