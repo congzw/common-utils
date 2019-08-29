@@ -15,7 +15,7 @@ namespace AsyncFormDemo
             this.cbxAutoLine.Checked = true;
             this.cbxAutoDate.Checked = true;
 
-            var asyncFormHelper = AsyncUiHelper.Create(this.txtMessage, message => { this.txtMessage.AppendText(message); });
+            var asyncFormHelper = this.txtMessage.CreateAsyncUiHelper(message => { this.txtMessage.AppendText(message); });
             FormHelper = asyncFormHelper;
         }
 

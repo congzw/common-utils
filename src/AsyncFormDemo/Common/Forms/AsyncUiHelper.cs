@@ -31,7 +31,10 @@ namespace Common
             }
             if (InvokeControl.InvokeRequired)
             {
-                InvokeControl.Invoke(UpdateUiMessage, value);
+                //https://www.cnblogs.com/Rustle/articles/11301.html
+                //https://www.cnblogs.com/worldreason/archive/2008/06/09/1216127.html
+                //InvokeControl.Invoke(UpdateUiMessage, value);
+                InvokeControl.BeginInvoke(UpdateUiMessage, value);
             }
             else
             {
@@ -52,5 +55,13 @@ namespace Common
         }
 
         #endregion
+    }
+
+    public static class AsyncUiHelperExtensions
+    {
+        public static AsyncUiHelper CreateAsyncUiHelper(this Control invokeControl, UpdateUiMessageDelegate updateMessage)
+        {
+            return AsyncUiHelper.Create(invokeControl, updateMessage);
+        }
     }
 }
