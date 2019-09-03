@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Common
 {
     public class AssertHelper
@@ -34,12 +33,6 @@ namespace Common
             }
             Assert.IsNotNull(expectedEx, PrefixKo("没有发现应该抛出的异常: " + typeof(T).Name));
         }
-
-        public static void ShouldAsyncThrows<T>(Func<Task> task) where T : Exception
-        {
-            ShouldThrows<T>(() => AsyncHelper.RunSync(task));
-        }
-
         public static string PrefixOk(string value)
         {
             return OkMark + " " + value;
@@ -50,15 +43,15 @@ namespace Common
         }
         public static void WriteLineOk(string message)
         {
-            Debug.WriteLine(PrefixOk(message));
+            WriteLine(PrefixOk(message));
         }
         public static void WriteLineKo(string message)
         {
-            Debug.WriteLine(PrefixKo(message));
+            WriteLine(PrefixKo(message));
         }
         public static void WriteLine(string message)
         {
-            Debug.WriteLine(message);
+            WriteLine(message, null);
         }
         public static void WriteLineForShouldBeTrue(bool result)
         {
@@ -106,6 +99,18 @@ namespace Common
             else
             {
                 WriteLineKo(message + ": null");
+            }
+        }
+
+        public static void WriteLine(string message, string prefix)
+        {
+            if (string.IsNullOrWhiteSpace(prefix))
+            {
+                Trace.WriteLine(message);
+            }
+            else
+            {
+                Trace.WriteLine(prefix + message);
             }
         }
     }

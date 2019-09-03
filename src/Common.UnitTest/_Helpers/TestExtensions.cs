@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Common
 {
     public static class TestExtensions
@@ -28,7 +28,7 @@ namespace Common
             Assert.IsNotNull(value);
             return value;
         }
-        
+
         public static object ShouldEqual(this object value, object expectedValue)
         {
             string message = string.Format("Should {0} equals {1}", value, expectedValue);
@@ -44,7 +44,7 @@ namespace Common
             AssertHelper.WriteLineOk(message);
             return value;
         }
-        
+
         public static object ShouldSame(this object value, object expectedValue)
         {
             if (value == null || expectedValue == null)
@@ -82,7 +82,7 @@ namespace Common
             AssertHelper.WriteLineForShouldBeFalse(result);
             Assert.IsFalse(result);
         }
-        
+
         public static IEnumerable<T> ShouldEmpty<T>(this IEnumerable<T> values)
         {
             Assert.IsNotNull(values);
@@ -108,12 +108,12 @@ namespace Common
         {
             if (value == null)
             {
-                Debug.WriteLine("null");
+                Trace.WriteLine("null");
             }
 
             if (value is string)
             {
-                Debug.WriteLine(value);
+                Trace.WriteLine(value);
                 return value;
             }
 
@@ -122,11 +122,11 @@ namespace Common
             {
                 foreach (var item in items)
                 {
-                    Debug.WriteLine(item);
+                    Trace.WriteLine(item);
                 }
                 return value;
             }
-            Debug.WriteLine(value);
+            Trace.WriteLine(value);
             return value;
         }
 
