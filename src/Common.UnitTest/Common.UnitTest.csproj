@@ -54,6 +54,7 @@
     <Compile Include="DelayedGroupCacheSpec.cs" />
     <Compile Include="IncludePropertiesSpec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleLoopTaskSpec.cs" />
     <Compile Include="SimpleMapperSpec.cs" />
     <Compile Include="SimpleEventBusSpec.cs" />
     <Compile Include="SimpleLogSpec.cs" />

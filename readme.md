@@ -3,7 +3,8 @@
 ## change list
 
 - 
-- 20190904 add IncludePropertiesSpec
+- 20190904 add SimpleLoopTask
+- 20190904 add IncludeProperties
 - 20190903 add DateTimeRange and DateTimeRangeArchive
 - 20190829 ModelHelper support cross types setting
 - 20190829 fix Control.Invoke dead lock bugs
