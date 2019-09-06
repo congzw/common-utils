@@ -3,7 +3,7 @@
 
 namespace Common
 {
-    public class RuntimeHelper
+    public class MyRuntimeHelper
     {
         public bool IsOsPlatform(params OSPlatform[] osPlatforms)
         {
@@ -43,7 +43,7 @@ namespace Common
 
         #region for simple use
 
-        public static RuntimeHelper Instance = new RuntimeHelper();
+        public static MyRuntimeHelper Instance = new MyRuntimeHelper();
 
         #endregion
     }

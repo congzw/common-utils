@@ -3,7 +3,7 @@
 ## change list
 
 - 
-- 20190906 add RuntimeHelper
+- 20190906 add MyRuntimeHelper
 - 20190904 add SimpleLoopTask
 - 20190904 add IncludeProperties
 - 20190903 add DateTimeRange and DateTimeRangeArchive
