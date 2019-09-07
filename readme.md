@@ -1,5 +1,11 @@
 # common utils 
 
+## todo list
+
+- BitFlagHelper
+- server setting with Html, JS(Vue, Angular, or other Fx), WebApi
+- SimpleLogSettings set with config
+
 ## change list
 
 - 

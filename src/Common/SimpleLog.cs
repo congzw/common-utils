@@ -206,6 +206,7 @@ namespace Common
         }
 
         public static string DefaultCategory = "Default";
+        public static string DefaultPrefix = "SimpleLog";
         public IDictionary<string, SimpleLogSetting> Items { get; set; }
     }
 
@@ -272,7 +273,7 @@ namespace Common
     {
         private static void LogMessage(LogMessageArgs args)
         {
-            Trace.WriteLine(string.Format("{0} [{1}][{2}] {3}", args.Category, "SimpleLog", args.Level.ToString(), args.Message));
+            Trace.WriteLine(string.Format("{0} [{1}][{2}] {3}", args.Category, SimpleLogSettings.DefaultPrefix, args.Level.ToString(), args.Message));
         }
 
         public LogMessageActions()
