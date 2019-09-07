@@ -206,7 +206,7 @@ namespace Common
         }
 
         public static string DefaultCategory = "Default";
-        public static string DefaultPrefix = "SimpleLog";
+        public static string DefaultPrefix = string.Empty;
         public IDictionary<string, SimpleLogSetting> Items { get; set; }
     }
 
@@ -271,11 +271,19 @@ namespace Common
 
     public class LogMessageActions : Dictionary<string, LogMessageAction>
     {
+        private static string _prefix = null;
+
         private static void LogMessage(LogMessageArgs args)
         {
-            Trace.WriteLine(string.Format("{0} [{1}][{2}] {3}", args.Category, SimpleLogSettings.DefaultPrefix, args.Level.ToString(), args.Message));
+            if (_prefix == null)
+            {
+                _prefix = string.IsNullOrWhiteSpace(SimpleLogSettings.DefaultPrefix)
+                    ? string.Empty
+                    : string.Format("[{0}]", SimpleLogSettings.DefaultPrefix.Trim());
+            }
+            Trace.WriteLine(string.Format("{0} [{1}][{2}]{3} {4}", args.Category, "SimpleLog", args.Level.ToString(), _prefix, args.Message));
         }
-
+        
         public LogMessageActions()
         {
             var defaultCategory = SimpleLogSettings.DefaultCategory;
