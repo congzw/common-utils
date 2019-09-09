@@ -2,6 +2,7 @@
 
 ## todo list
 
+- SimpleIni refact
 - BitFlagHelper
 - server setting with Html, JS(Vue, Angular, or other Fx), WebApi
 - SimpleLogSettings set with config
@@ -9,6 +10,7 @@
 ## change list
 
 - 
+- 20190909 add TaskCanceledException handing
 - 20190906 add MyRuntimeHelper
 - 20190904 add SimpleLoopTask
 - 20190904 add IncludeProperties
