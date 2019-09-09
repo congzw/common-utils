@@ -82,7 +82,7 @@ namespace Common
                         LogInfo(string.Format("fail {0} more then max: {1}, exit", errorCount, MaxTryFailCount));
                         break;
                     }
-                    LogInfo(string.Format("fail time: {0}/{1}, ex:{2}", errorCount, MaxTryFailCount, e.Message));
+                    LogEx(e, string.Format("fail time: {0}/{1}, ex:{2}", errorCount, MaxTryFailCount, e.Message));
                 }
 
                 try
@@ -90,7 +90,6 @@ namespace Common
                     //Thread.Sleep actually makes current thread to sleep
                     //Task.Delay is a logical delay without blocking the current thread. Task.Delay is a timer based wait mechanism.
                     //In async programming model you should always use Task.Delay() if you want something(continuation) happen after some delay.
-
                     TaskEx.Delay(LoopSpan).Wait();
                 }
                 catch (TaskCanceledException)
@@ -137,6 +136,12 @@ namespace Common
         {
             var logger = SimpleLogSingleton<SimpleLoopTask>.Instance.Logger;
             logger.LogInfo(message);
+        }
+
+        private void LogEx(Exception ex, string message = null)
+        {
+            var logger = SimpleLogSingleton<SimpleLoopTask>.Instance.Logger;
+            logger.LogEx(ex, message);
         }
     }
 }
