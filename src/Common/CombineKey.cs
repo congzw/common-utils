@@ -6,7 +6,7 @@ namespace Common
 {
     public interface ICombineKey<T> where T : ICombineKey<T>
     {
-        IList<string> IgnorePropertyNames { get; set; }
+        IList<string> IgnoreCombinePropertyNames { get; set; }
         string CombineKey { get; set; }
         void SetKeyByProperties();
         void SetPropertiesByKey();
@@ -16,23 +16,17 @@ namespace Common
     {
         protected BaseCombineKey()
         {
-            IgnorePropertyNames = new List<string>();
-            IgnorePropertyNames.Add(nameof(CombineKey));
-            IgnorePropertyNames.Add(nameof(IgnorePropertyNames));
+            IgnoreCombinePropertyNames = new List<string>();
+            IgnoreCombinePropertyNames.Add(nameof(CombineKey));
+            IgnoreCombinePropertyNames.Add(nameof(IgnoreCombinePropertyNames));
         }
 
-        public IList<string> IgnorePropertyNames { get; set; }
+        public IList<string> IgnoreCombinePropertyNames { get; set; }
         public string CombineKey { get; set; }
 
         public virtual void SetKeyByProperties()
         {
-            var ignoreNames = this.IgnorePropertyNames ?? new List<string>();
-            if (!ignoreNames.Contains("Key"))
-            {
-                ignoreNames.Add("Key");
-            }
-
-            var iniString = this.AsIniString(ignoreNames);
+            var iniString = this.AsIniString(IgnoreCombinePropertyNames);
             this.CombineKey = iniString;
         }
 

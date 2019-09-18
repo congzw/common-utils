@@ -13,7 +13,7 @@ namespace Common
             demoCombineModel.BarId = "Bar01";
             demoCombineModel.FooId = "Foo01";
             demoCombineModel.BlahId = "Blah01";
-            demoCombineModel.IgnorePropertyNames.Add("BlahId");
+            demoCombineModel.IgnoreCombinePropertyNames.Add("BlahId");
             demoCombineModel.SetKeyByProperties();
             demoCombineModel.CombineKey.ShouldEqual("FooId=Foo01;BarId=Bar01");
         }
@@ -34,7 +34,7 @@ namespace Common
         {
             var demoCombineModel = new DemoCombineModel();
             demoCombineModel.CombineKey = "FooId=Foo01;BarId=Bar01;BlahId=Blah01";
-            demoCombineModel.IgnorePropertyNames.Add("BlahId");
+            demoCombineModel.IgnoreCombinePropertyNames.Add("BlahId");
             demoCombineModel.SetPropertiesByKey();
             demoCombineModel.FooId.ShouldEqual("Foo01");
             demoCombineModel.BarId.ShouldEqual("Bar01");
