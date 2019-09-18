@@ -7,7 +7,7 @@ namespace Common
     public interface ICombineKey<T> where T : ICombineKey<T>
     {
         IList<string> IgnorePropertyNames { get; set; }
-        string Key { get; set; }
+        string CombineKey { get; set; }
         void SetKeyByProperties();
         void SetPropertiesByKey();
     }
@@ -17,12 +17,12 @@ namespace Common
         protected BaseCombineKey()
         {
             IgnorePropertyNames = new List<string>();
-            IgnorePropertyNames.Add(nameof(Key));
+            IgnorePropertyNames.Add(nameof(CombineKey));
             IgnorePropertyNames.Add(nameof(IgnorePropertyNames));
         }
 
         public IList<string> IgnorePropertyNames { get; set; }
-        public string Key { get; set; }
+        public string CombineKey { get; set; }
 
         public virtual void SetKeyByProperties()
         {
@@ -33,12 +33,12 @@ namespace Common
             }
 
             var iniString = this.AsIniString(ignoreNames);
-            this.Key = iniString;
+            this.CombineKey = iniString;
         }
 
         public virtual void SetPropertiesByKey()
         {
-            var key = this.Key;
+            var key = this.CombineKey;
             if (string.IsNullOrWhiteSpace(key))
             {
                 return;
@@ -49,16 +49,22 @@ namespace Common
         }
     }
 
+    #region how to use
+
     //public class DemoCombineModel : BaseCombineKey<DemoCombineModel>
     //{
-    //    public DemoCombineModel()
-    //    {
-    //        this.IgnorePropertyNames.Add("Key");
-    //        this.IgnorePropertyNames.Add("BlahId");
-    //    }
-
     //    public string FooId { get; set; }
     //    public string BarId { get; set; }
     //    public string BlahId { get; set; }
     //}
+
+    //var demoCombineModel = new DemoCombineModel();
+    //demoCombineModel.CombineKey = "FooId=Foo01;BarId=Bar01;BlahId=Blah01";
+    //demoCombineModel.IgnorePropertyNames.Add("BlahId");
+    //demoCombineModel.SetPropertiesByKey();
+    //demoCombineModel.FooId.ShouldEqual("Foo01");
+    //demoCombineModel.BarId.ShouldEqual("Bar01");
+    //demoCombineModel.BlahId.ShouldEqual("Blah01");
+
+    #endregion
 }
