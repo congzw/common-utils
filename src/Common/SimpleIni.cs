@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Common
@@ -1089,6 +1090,82 @@ namespace Common
         public void SetProperties(IDictionary<string, object> items, object toBeUpdated, string modelName)
         {
             MyModelHelper.SetPropertiesWithDictionary(items, toBeUpdated, modelName + ".");
+        }
+    }
+
+    public static class IniStringExtensions
+    {
+        public static IDictionary<string, object> AsIniDic(this string iniString, string equalOperator = "=", char lastSplit = ';')
+        {
+            var result = new Dictionary<string, object>();
+
+            if (string.IsNullOrWhiteSpace(iniString))
+            {
+                return result;
+            }
+
+            var values = iniString.Split(lastSplit);
+            foreach (var value in values)
+            {
+                var items = value.Split(new string[] { equalOperator }, StringSplitOptions.None);
+                var propName = items[0];
+                object propValue = null;
+                if (items.Length == 2)
+                {
+                    if (!string.IsNullOrWhiteSpace(items[1]))
+                    {
+                        propValue = items[1].Trim();
+                    }
+                }
+                result.Add(propName, propValue);
+            }
+            return result;
+        }
+
+        public static string AsIniString(this object instance, IEnumerable<string> ignoredNames, string equalOperator = "=", char lastSplit = ';', bool removeLastSplit = true)
+        {
+            var fixIgnoredNames = new List<string>();
+            if (ignoredNames != null)
+            {
+                fixIgnoredNames.AddRange(ignoredNames);
+            }
+
+            var schema = string.Format("{0}{1}{2}{3}", "{0}", equalOperator, "{1}", lastSplit);
+            var sb = new StringBuilder();
+            if (instance != null)
+            {
+                //获取类型信息
+                Type t = instance.GetType();
+                PropertyInfo[] propertyInfos = t.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                foreach (PropertyInfo var in propertyInfos)
+                {
+                    if (fixIgnoredNames.Any(x => x.Equals(var.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        continue;
+                    }
+                    object value = var.GetValue(instance, null);
+                    string temp = "";
+
+                    //如果是string，并且为null
+                    if (value == null)
+                    {
+                        temp = "";
+                    }
+                    else
+                    {
+                        temp = value.ToString();
+                    }
+                    sb.AppendFormat(schema, var.Name, temp);
+                }
+            }
+            //去掉最后的分号
+            if (removeLastSplit)
+            {
+                string result = sb.ToString();
+                return result.Substring(0, result.Length - 1);
+            }
+
+            return sb.ToString();
         }
     }
 }
