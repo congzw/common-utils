@@ -10,6 +10,7 @@
 ## change list
 
 - 
+- 20190924 add SignalR and HubEventBus demo
 - 20190918 add CombineKey and spec
 - 20190909 add TaskCanceledException handing
 - 20190906 add MyRuntimeHelper
