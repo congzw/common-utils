@@ -1,8 +1,7 @@
-﻿// ReSharper disable CheckNamespace
-
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+// ReSharper disable CheckNamespace
 
 namespace Common.SignalR.Scoped
 {
@@ -28,34 +27,19 @@ namespace Common.SignalR.Scoped
 
         public float HandleOrder { get; set; }
 
-        public bool ShouldHandle(IHubEvent hubEvent)
+        public bool ShouldHandle(ISignalREvent hubEvent)
         {
             return hubEvent is OnDisconnectedEvent;
         }
 
-        public Task HandleAsync(IHubEvent hubEvent)
+        public Task HandleAsync(ISignalREvent hubEvent)
         {
             if (!ShouldHandle(hubEvent))
             {
                 return Task.CompletedTask;
             }
             var theEvent = (OnDisconnectedEvent)hubEvent;
-            return _scopedConnectionManager.OnDisconnected(theEvent.RaiseHub, theEvent.Exception);
-        }
-    }
-    public static class OnDisconnectedEventExtensions
-    {
-        public static string _UpdateScopedConnectionBags = "UpdateScopedConnectionBags";
-        public static string _ScopedConnectionsUpdated = "ScopedConnectionsUpdated";
-
-        public static string UpdateScopedConnectionBags(this ScopedConstForServer server)
-        {
-            return _UpdateScopedConnectionBags;
-        }
-
-        public static string ScopedConnectionsUpdated(this ScopedConstForClient client)
-        {
-            return _ScopedConnectionsUpdated;
+            return _scopedConnectionManager.OnDisconnected(theEvent);
         }
     }
 }

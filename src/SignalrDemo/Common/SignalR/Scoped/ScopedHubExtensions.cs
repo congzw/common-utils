@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Common;
 
 // ReSharper disable CheckNamespace
 
@@ -9,7 +11,13 @@ namespace Common.SignalR.Scoped
         public static IServiceCollection AddScopedHub(this IServiceCollection services)
         {
             services.AddScoped<HubEventBus>();
-            services.AddAllImpl<IHubEventHandler>(ServiceLifetime.Scoped);
+            services.AddAllImpl<ISignalREventHandler>(ServiceLifetime.Scoped, typeof(SignalREventHandlerDecorator));
+            //todo config
+            //var traceEventBus = false;
+            //if (traceEventBus)
+            //{
+            //    services.Decorate<ISignalREventHandler, SignalREventHandlerDecorator>();
+            //}
 
             services.AddSingleton<IScopedConnectionRepository, MemoryScopedConnectionRepository>();
             services.AddSingleton<ScopedConnectionManager>();
@@ -28,5 +36,32 @@ namespace Common.SignalR.Scoped
         //        return anyHubWrap;
         //    }));
         //}
+    }
+
+    public class SignalREventHandlerDecorator : ISignalREventHandler
+    {
+        private readonly ISignalREventHandler _signalREventHandler;
+
+        public SignalREventHandlerDecorator(ISignalREventHandler signalREventHandler)
+        {
+            _signalREventHandler = signalREventHandler;
+        }
+
+        public float HandleOrder
+        {
+            get => _signalREventHandler.HandleOrder;
+            set => _signalREventHandler.HandleOrder = value;
+        }
+
+        public bool ShouldHandle(ISignalREvent @event)
+        {
+            return _signalREventHandler.ShouldHandle(@event);
+        }
+
+        public async Task HandleAsync(ISignalREvent @event)
+        {
+            //todo trace
+            await _signalREventHandler.HandleAsync(@event).ConfigureAwait(false);
+        }
     }
 }

@@ -27,10 +27,16 @@ namespace Common.SignalR.Scoped
             return theOne;
         }
 
-        public async Task OnConnected(Hub hub)
+        public async Task OnConnected(OnConnectedEvent theEvent)
         {
+            if (theEvent?.RaiseHub == null)
+            {
+                return;
+            }
+
+            var hub = theEvent.RaiseHub;
+
             var conn = new ScopedConnection();
-            
             var connectionId = hub.Context.ConnectionId;
             conn.ConnectionId = connectionId;
             var now = DateHelper.Instance.GetDateNow();
@@ -54,13 +60,26 @@ namespace Common.SignalR.Scoped
                 }
                 ScopedContexts[oneKey] = hub.Context;
             }
-            
+
             await hub.Groups.AddToGroupAsync(conn.ConnectionId, conn.ScopeGroupId).ConfigureAwait(false);
-            await UpdateScopedConnections(hub, conn.ScopeGroupId).ConfigureAwait(false);
+
+            var scopedConnections = _repository
+                .GetScopedConnections(conn.ScopeGroupId)
+                .OrderBy(x => x.CreateAt).ToList();
+            var clientProxy = hub.Clients.Group(conn.ScopeGroupId);
+            await clientProxy.SendAsync(ScopedConst.ForClient.ScopedConnectionsUpdated(), scopedConnections).ConfigureAwait(false);
         }
 
-        public async Task OnDisconnected(Hub hub, Exception exception)
+        public async Task OnDisconnected(OnDisconnectedEvent theEvent)
         {
+            if (theEvent?.RaiseHub == null)
+            {
+                return;
+            }
+
+            var hub = theEvent.RaiseHub;
+            var exception = theEvent.Exception;
+
             var connectionId = hub.Context.ConnectionId;
             var now = DateHelper.Instance.GetDateNow();
 
@@ -80,15 +99,23 @@ namespace Common.SignalR.Scoped
             }
             _repository.RemoveScopedConnection(connectionId);
             await hub.Groups.RemoveFromGroupAsync(connectionId, conn.ScopeGroupId).ConfigureAwait(false);
-            await UpdateScopedConnections(hub, conn.ScopeGroupId).ConfigureAwait(false);
+
+            var scopedConnections = _repository
+                .GetScopedConnections(conn.ScopeGroupId)
+                .OrderBy(x => x.CreateAt).ToList();
+            var clientProxy = hub.Clients.Group(conn.ScopeGroupId);
+            await clientProxy.SendAsync(ScopedConst.ForClient.ScopedConnectionsUpdated(), scopedConnections);
         }
-        
-        public Task UpdateScopedConnectionBags(Hub hub, IDictionary<string, object> bags)
+
+        public Task UpdateScopedConnectionBags(OnUpdateBagsEvent theEvent)
         {
-            if (bags == null || bags.Count == 0)
+            if (theEvent == null || theEvent.Bags == null || theEvent.Bags.Count == 0)
             {
                 return Task.FromResult(0);
             }
+
+            var hub = theEvent.RaiseHub;
+            var bags = theEvent.Bags;
 
             var connectionId = hub.Context.ConnectionId;
             var conn = _repository.GetScopedConnection(connectionId);
@@ -103,14 +130,59 @@ namespace Common.SignalR.Scoped
             }
 
             _repository.AddOrUpdateScopedConnection(conn);
-            return UpdateScopedConnections(hub, conn.ScopeGroupId);
+
+            var scopedConnections = _repository.GetScopedConnections(conn.ScopeGroupId);
+            var connections = scopedConnections.OrderBy(x => x.CreateAt).ToList();
+            var clientProxy = hub.Clients.Group(conn.ScopeGroupId);
+            return clientProxy.SendAsync(ScopedConst.ForClient.ScopedConnectionsUpdated(), connections);
         }
 
-        public Task UpdateScopedConnections(Hub hub, string scopeGroupId)
+        public Task UpdateScopedConnectionBagsOutSideHub(OnUpdateBagsHubContextEvent theEvent)
         {
-            var scopedConnections = _repository.GetScopedConnections(scopeGroupId);
+            if (theEvent == null)
+            {
+                throw new ArgumentNullException(nameof(theEvent));
+            }
+
+            var hubContext = theEvent.Context;
+            if (hubContext == null)
+            {
+                throw new ArgumentNullException(nameof(theEvent.Context));
+            }
+
+            if (theEvent.Bags == null || theEvent.Bags.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+
+            var scopedClientKey = ScopedClientKey.Create().WithScopeGroupId(theEvent.ScopeGroupId).WithClientId(theEvent.ClientId);
+            var hubCallerContext = TryGetHubCallerContext(scopedClientKey);
+            if (hubCallerContext == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            var bags = theEvent.Bags;
+
+            var connectionId = hubCallerContext.ConnectionId;
+            var conn = _repository.GetScopedConnection(connectionId);
+            if (conn == null)
+            {
+                return Task.FromResult(0);
+            }
+
+            foreach (var bag in bags)
+            {
+                conn.Bags[bag.Key] = bag.Value;
+            }
+
+            _repository.AddOrUpdateScopedConnection(conn);
+
+            var scopedConnections = _repository.GetScopedConnections(conn.ScopeGroupId);
             var connections = scopedConnections.OrderBy(x => x.CreateAt).ToList();
-            return hub.Clients.Group(scopeGroupId).SendAsync(ScopedConst.ForClient.ScopedConnectionsUpdated(), connections);
+            var clientProxy = hubContext.Clients.Group(conn.ScopeGroupId);
+            return clientProxy.SendAsync(ScopedConst.ForClient.ScopedConnectionsUpdated(), connections);
         }
 
         private async Task KickSameScopedClient(Hub hub, HubCallerContext oldClientHub, ScopedClientKey scopedClientKey)

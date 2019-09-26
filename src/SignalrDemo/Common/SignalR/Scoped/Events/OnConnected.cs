@@ -23,19 +23,19 @@ namespace Common.SignalR.Scoped
         
         public float HandleOrder { get; set; }
 
-        public bool ShouldHandle(IHubEvent hubEvent)
+        public bool ShouldHandle(ISignalREvent hubEvent)
         {
             return hubEvent is OnConnectedEvent;
         }
 
-        public async Task HandleAsync(IHubEvent hubEvent)
+        public async Task HandleAsync(ISignalREvent hubEvent)
         {
             if (!ShouldHandle(hubEvent))
             {
                 return;
             }
             var theEvent = (OnConnectedEvent)hubEvent;
-            await _scopedConnectionManager.OnConnected(theEvent.RaiseHub).ConfigureAwait(false);
+            await _scopedConnectionManager.OnConnected(theEvent).ConfigureAwait(false);
         }
     }
 }

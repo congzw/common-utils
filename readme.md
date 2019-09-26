@@ -10,6 +10,8 @@
 ## change list
 
 - 
+- 20190926 add Decorator support
+- 20190926 add HubContextEvent support
 - 20190924 add SignalR and HubEventBus demo
 - 20190918 add CombineKey and spec
 - 20190909 add TaskCanceledException handing
