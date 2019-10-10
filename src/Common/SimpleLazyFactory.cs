@@ -69,8 +69,7 @@ namespace Common
     //{
     //    #region for di extensions
 
-    //    public static Func<IServiceGuard> Resolve { get; set; }
-    //        = SimpleLazyFactory<IServiceGuard>.Instance.Default(() => new ServiceGuard());
+    //    public static Func<IServiceGuard> Resolve { get; set; } = SimpleLazyFactory<IServiceGuard>.Instance.Default(() => new ServiceGuard()).Resolve;
 
     //    #endregion
     //}
