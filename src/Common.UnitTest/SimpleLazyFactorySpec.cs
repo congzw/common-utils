@@ -19,6 +19,33 @@ namespace Common
         }
 
         [TestMethod]
+        public void Default_Not_Init_Should_Ex()
+        {
+            AssertHelper.ShouldThrows<Exception>(() =>
+            {
+                var simpleLazyFactory = SimpleLazyFactory<IFooService>.CreateForTest();
+                simpleLazyFactory.Resolve();
+            });
+        }
+
+        [TestMethod]
+        public void Reset_Multi_Time_Should_Ok()
+        {
+            var counter1 = new InstanceCounter();
+            var counter2 = new InstanceCounter();
+            var simpleLazyFactory = SimpleLazyFactory<IFooService>.CreateForTest();
+            simpleLazyFactory.Reset(() => new FooService(counter1));
+            simpleLazyFactory.Reset(() => new FooService(counter2));
+            var resolve = simpleLazyFactory.Resolve;
+            for (int i = 0; i < 3; i++)
+            {
+                var service = resolve();
+            }
+            counter1.TotalCount.ShouldEqual(0);
+            counter2.TotalCount.ShouldEqual(1);
+        }
+
+        [TestMethod]
         public void Default_Multi_Call_Should_Return_Same()
         {
             var defaultCount = new InstanceCounter();
@@ -80,6 +107,8 @@ namespace Common
                 var fooService = FooService.Resolve();
                 fooService.Counter.TotalCount.ShouldEqual(1);
             }
+            
+            FooService.Resolve.ShouldEqual(SimpleLazyFactory<IFooService>.Instance.Resolve);
         }
 
         public interface IFooService
@@ -106,7 +135,7 @@ namespace Common
 
             #region for di extensions
 
-            public static Func<IFooService> Resolve { get; set; }
+            public static Func<IFooService> Resolve { get; }
                 = SimpleLazyFactory<IFooService>.Instance.Default(() => new FooService(new InstanceCounter())).Resolve;
 
             #endregion
