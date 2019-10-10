@@ -10,6 +10,7 @@
 ## change list
 
 - 
+- 20191010 add SimpleLazyFactory and Spec
 - 20190926 add Decorator support
 - 20190926 add HubContextEvent support
 - 20190924 add SignalR and HubEventBus demo
