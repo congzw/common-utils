@@ -115,8 +115,8 @@ namespace Common
         {
             var simpleQueryString = new SimpleQueryString();
             var myObj = new MyObjectWithMultiValues();
-            var queryString = simpleQueryString.CreateQueryStringFromObject(myObj, false);
-            queryString.ShouldEqual("A=1,2&B=2&B=3&C=4&C=5");
+            simpleQueryString.CreateQueryStringFromObject(myObj, false).ShouldEqual("A=1,2&B=2&B=3&C=4&C=5");
+            simpleQueryString.CreateQueryStringFromObject(myObj, false, new []{"a","B"}).ShouldEqual("A=1,2&B=2&B=3");
         }
 
         public class MyObject

@@ -99,8 +99,16 @@ namespace Common
             }
             return dic;
         }
-        
-        public static string CreateQueryStringFromObject(this ISimpleQueryString simpleQueryString, object obj, bool autoAppendQuestionMark)
+
+        /// <summary>
+        /// CreateQueryStringFromObject
+        /// </summary>
+        /// <param name="simpleQueryString"></param>
+        /// <param name="obj"></param>
+        /// <param name="autoAppendQuestionMark"></param>
+        /// <param name="includeNames">如果为空，则包含全部</param>
+        /// <returns></returns>
+        public static string CreateQueryStringFromObject(this ISimpleQueryString simpleQueryString, object obj, bool autoAppendQuestionMark, IEnumerable<string> includeNames = null)
         {
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
@@ -124,6 +132,14 @@ namespace Common
 
             foreach (var property in properties)
             {
+                if (includeNames != null)
+                {
+                    if (!includeNames.Contains(property.Key, StringComparer.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                }
+
                 if (multiValueKeys.Contains(property.Key))
                 {
                     AddMultiValues(property, properties, nvc);
