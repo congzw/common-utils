@@ -61,6 +61,7 @@
     <Compile Include="SimpleEventBusSpec.cs" />
     <Compile Include="SimpleLogSpec.cs" />
     <Compile Include="SimpleProcessRunnerSpec.cs" />
+    <Compile Include="SimpleQueryStringSpec.cs" />
     <Compile Include="_Helpers\AssertHelper.cs" />
     <Compile Include="_Helpers\AsyncHelper.cs" />
     <Compile Include="_Helpers\TestExtensions.cs" />
