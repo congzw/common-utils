@@ -50,6 +50,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CombineKeyParserSpec.cs" />
     <Compile Include="CombineKeySpec.cs" />
     <Compile Include="DateTimeRangeSpec.cs" />
     <Compile Include="DelayedGroupCacheSpec.cs" />
