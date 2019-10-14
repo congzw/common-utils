@@ -10,7 +10,7 @@
 ## change list
 
 - 
-- 20191014 add CombineKeyParser and Spec
+- 20191014 delete CombineKey and Spec; add CombineKeyParser and Spec
 - 20191012 add SimpleQueryString and Spec
 - 20191010 add SimpleLazyFactory and Spec
 - 20190926 add Decorator support

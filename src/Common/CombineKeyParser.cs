@@ -141,6 +141,118 @@ namespace Common
 
         private static IDictionary<string, object> GetGetPropertiesDic(object model)
         {
+            return CombineKeyHelper.GetGetPropertiesDic(model);
+        }
+        private static IDictionary<string, T> SelectIncludeItems<T>(IDictionary<string, T> items, params string[] includeKeys)
+        {
+            return CombineKeyHelper.SelectIncludeItems(items, includeKeys);
+        }
+        private static bool SetProperty(object model, string key, object value)
+        {
+            return CombineKeyHelper.SetProperty(model, key, value);
+        }
+    }
+
+    public interface IHasCombineKey<T> where T : IHasCombineKey<T>
+    {
+        string[] GetIncludePropertyNames();
+        string GetCombinedKeyName();
+    }
+
+    public static class HasCombineKeyExtensions
+    {
+        public static T SetPropertiesByCombinedKey<T>(this T model, ICombineKeyParser parser = null) where T : IHasCombineKey<T>
+        {
+            if (model == null)
+            {
+                return default(T);
+            }
+
+            var includeKeyNames = model.GetIncludePropertyNames();
+            var combineKeyName = model.GetCombinedKeyName();
+            return SetPropertiesByCombinedKey(model, combineKeyName, includeKeyNames, parser);
+        }
+
+        public static T SetCombinedKeyByProperties<T>(this T model, ICombineKeyParser parser = null) where T : IHasCombineKey<T>
+        {
+            if (model == null)
+            {
+                return default(T);
+            }
+
+            var includeKeyNames = model.GetIncludePropertyNames();
+            var combineKeyName = model.GetCombinedKeyName();
+            return SetCombinedKeyByProperties(model, combineKeyName, includeKeyNames, parser);
+        }
+        
+        public static T SetPropertiesByCombinedKey<T>(this T model, string combinedKeyName, string[] includeKeyNames, ICombineKeyParser parser = null)
+        {
+            if (model == null)
+            {
+                return default(T);
+            }
+            
+            if (includeKeyNames == null || includeKeyNames.Length == 0)
+            {
+                return model;
+            }
+
+            if (string.IsNullOrWhiteSpace(combinedKeyName))
+            {
+                return model;
+            }
+
+            var combineKeyValue = GetProperty(model, combinedKeyName);
+            if (combineKeyValue == null)
+            {
+                return model;
+            }
+
+            var combineKeyParser = parser ?? CombineKeyParser.Resolve();
+            var includeKeys = combineKeyParser.ParseCombinedKey(combineKeyValue.ToString());
+            foreach (var includeKey in includeKeys)
+            {
+                SetProperty(model, includeKey.Key, includeKey.Value);
+            }
+            return model;
+        }
+        
+        public static T SetCombinedKeyByProperties<T>(this T model, string combinedKeyName, string[] includeKeyNames, ICombineKeyParser parser = null) 
+        {
+            if (model == null)
+            {
+                return default(T);
+            }
+
+            if (includeKeyNames == null || includeKeyNames.Length == 0)
+            {
+                return model;
+            }
+            if (string.IsNullOrWhiteSpace(combinedKeyName))
+            {
+                return model;
+            }
+
+            var combineKeyParser = parser ?? CombineKeyParser.Resolve();
+            var combinedKeyValue = combineKeyParser.AutoGetCombinedKey(model, includeKeyNames);
+            SetProperty(model, combinedKeyName, combinedKeyValue);
+            return model;
+        }
+        
+        private static bool SetProperty(object model, string key, object value)
+        {
+            return CombineKeyHelper.SetProperty(model, key, value);
+        }
+        private static object GetProperty(object model, string key)
+        {
+            return CombineKeyHelper.GetProperty(model, key);
+        }
+    }
+
+    internal static class CombineKeyHelper
+    {
+        internal static IDictionary<string, object> GetGetPropertiesDic(object model)
+        {
             var result = new Dictionary<string, object>();
             if (model == null)
             {
@@ -155,7 +267,7 @@ namespace Common
             }
             return result;
         }
-        private static IDictionary<string, T> SelectIncludeItems<T>(IDictionary<string, T> items, params string[] includeKeys)
+        internal static IDictionary<string, T> SelectIncludeItems<T>(IDictionary<string, T> items, params string[] includeKeys)
         {
             var result = new Dictionary<string, T>(StringComparer.OrdinalIgnoreCase);
             if (items == null || items.Count == 0)
@@ -182,7 +294,7 @@ namespace Common
 
             return result;
         }
-        private static bool SetProperty(object model, string key, object value)
+        internal static bool SetProperty(object model, string key, object value)
         {
             var result = false;
             if (model != null && !string.IsNullOrEmpty(key) && value != null)
@@ -207,6 +319,25 @@ namespace Common
                 }
             }
             return result;
+        }
+        internal static object GetProperty(object model, string key)
+        {
+            if (model != null && !string.IsNullOrEmpty(key))
+            {
+                //获取类型信息
+                var theType = model.GetType();
+                var propertyInfos = theType.GetProperties();
+
+                foreach (var propertyInfo in propertyInfos)
+                {
+                    if (propertyInfo.Name.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var value = propertyInfo.GetValue(model, null);
+                        return value;
+                    }
+                }
+            }
+            return null;
         }
     }
 }

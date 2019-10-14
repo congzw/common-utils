@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Common
@@ -27,7 +26,7 @@ namespace Common
         }
         
         [TestMethod]
-        public void ParseCombinedKey__NullOrEmpty_ShouldReturnDefault()
+        public void ParseCombinedKey_NullOrEmpty_ShouldReturnDefault()
         {
             var parser = CombineKeyParser.NewForTest();
             parser.ParseCombinedKey(null).Count.ShouldEqual(0);
@@ -95,6 +94,50 @@ namespace Common
             items["C"].ShouldEqual("c");
         }
 
+        [TestMethod]
+        public void SetCombinedKeyByProperties_GenericExt_ShouldOk()
+        {
+            var parser = CombineKeyParser.NewForTest();
+            var foo = new Foo();
+            foo.A = "a";
+            foo.B = 1;
+            foo.SetCombinedKeyByProperties(parser).MyKey.ShouldEqual("A=a&B=1");
+        }
+
+        [TestMethod]
+        public void SetCombinedKeyByProperties_ObjectExt_ShouldOk()
+        {
+            var parser = CombineKeyParser.NewForTest();
+            var bar = new Bar();
+            bar.A = "a";
+            bar.B = 1;
+            bar.SetCombinedKeyByProperties("MyKey", new []{"A","b"}, parser).MyKey.ShouldEqual("A=a&b=1");
+        }
+
+        [TestMethod]
+        public void SetPropertiesByCombinedKey_GenericExt_ShouldOk()
+        {
+            var parser = CombineKeyParser.NewForTest();
+            var foo = new Foo();
+            foo.MyKey = "A=a&b=1";
+            foo.SetPropertiesByCombinedKey(parser);
+
+            foo.A.ShouldEqual("a");
+            foo.B.ShouldEqual(1);
+        }
+        
+        [TestMethod]
+        public void SetPropertiesByCombinedKey_ObjectExt_ShouldOk()
+        {
+            var parser = CombineKeyParser.NewForTest();
+            var foo = new Bar();
+            foo.MyKey = "A=a&b=1";
+            foo.SetPropertiesByCombinedKey("MyKey", new[] { "A", "B" }, parser);
+
+            foo.A.ShouldEqual("a");
+            foo.B.ShouldEqual(1);
+        }
+
         public class CombineKeyFoo
         {
             public CombineKeyFoo()
@@ -107,6 +150,46 @@ namespace Common
             public int B { get; set; }
             public string X { get; set; }
             public int[] Y { get; set; }
+        }
+
+        public class Foo : IHasCombineKey<Foo>
+        {
+            public string A { get; set; }
+            public int B { get; set; }
+            public string X { get; set; }
+            public int[] Y { get; set; }
+
+            public string MyKey { get; set; }
+
+            public string[] GetIncludePropertyNames()
+            {
+                return new[] { "A", "B" };
+            }
+
+            public string GetCombinedKeyName()
+            {
+                return "MyKey";
+            }
+        }
+
+        public class Bar 
+        {
+            public string A { get; set; }
+            public int B { get; set; }
+            public string X { get; set; }
+            public int[] Y { get; set; }
+
+            public string MyKey { get; set; }
+
+            public string[] GetIncludeKeyNames()
+            {
+                return new[] { "A", "B" };
+            }
+
+            public string GetCombinedKeyName()
+            {
+                return "MyKey";
+            }
         }
     }
 }
