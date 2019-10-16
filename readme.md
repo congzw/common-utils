@@ -10,6 +10,7 @@
 ## change list
 
 - 
+- 20191016 add IHaveBags and Spec
 - 20191014 delete CombineKey and Spec; add CombineKeyParser and Spec
 - 20191012 add SimpleQueryString and Spec
 - 20191010 add SimpleLazyFactory and Spec

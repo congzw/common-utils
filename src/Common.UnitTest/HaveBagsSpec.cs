@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Common
@@ -19,13 +16,13 @@ namespace Common
             myBag.GetBagValue("a", 0).ShouldEqual(1);
         }
 
-        //[TestMethod]
-        //public void Bags_Implicit_ShouldOk()
-        //{
-        //    var myBag = new Bar();
-        //    myBag.SetBagValue("A", 1);
-        //    myBag.GetBagValue("a", 0).ShouldEqual(1);
-        //}
+        [TestMethod]
+        public void Bags_Implicit_ShouldOk()
+        {
+            var myBag = new Bar();
+            myBag.SetBagValue("A", 1);
+            myBag.GetBagValue("a", 0).ShouldEqual(1);
+        }
 
         [TestMethod]
         public void Bags_Explicit_ShouldOk()
@@ -50,16 +47,16 @@ namespace Common
             }
         }
 
-        //public class Bar
-        //{
-        //    public Bar()
-        //    {
-        //        Bags = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-        //    }
-        //    public IDictionary<string, object> Bags { get; set; }
-        //}
+        public class Bar : IHaveBags
+        {
+            public Bar()
+            {
+                Bags = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            }
+            public IDictionary<string, object> Bags { get; set; }
+        }
 
-        public class Blah : IHaveBags
+        public class Blah : IShouldHaveBags
         {
             public Blah()
             {
