@@ -53,6 +53,7 @@
     <Compile Include="CombineKeyParserSpec.cs" />
     <Compile Include="DateTimeRangeSpec.cs" />
     <Compile Include="DelayedGroupCacheSpec.cs" />
+    <Compile Include="HaveBagsSpec.cs" />
     <Compile Include="IncludePropertiesSpec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleLazyFactorySpec.cs" />
