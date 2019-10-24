@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using Microsoft.CSharp.RuntimeBinder;
-using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
 
 // ReSharper disable CheckNamespace
 
 // change list:
-// 20191024 first release 2.0.0
+// 20191024 use reflection 2.0.0
 // 20191016 first release 1.0.0
 namespace Common
 {
@@ -89,12 +86,15 @@ namespace Common
             }
             return methodInfo.Invoke(model, null) as string;
         }
-        private static object GetProperty(object target, string name)
+        private static object GetProperty(object model, string name)
         {
-            var site = CallSite<Func<CallSite, object, object>>
-                .Create(Binder.GetMember(0, name, target.GetType(),
-                    new[] { CSharpArgumentInfo.Create(0, null) }));
-            return site.Target(site, target);
+            var theType = model.GetType();
+            var propInfo = theType.GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            if (propInfo == null)
+            {
+                return null;
+            }
+            return propInfo.GetValue(model, null);
         }
 
     }
