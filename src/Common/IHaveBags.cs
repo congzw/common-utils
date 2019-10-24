@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
+using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
 
 // ReSharper disable CheckNamespace
 
 // change list:
+// 20191024 first release 2.0.0
 // 20191016 first release 1.0.0
 namespace Common
 {
     public interface IShouldHaveBags
     {
-    }
-
-    public interface IHaveBagsProperty : IShouldHaveBags
-    {
-        string GetBagsPropertyName();
+        //IDictionary<string, object> Bags { get; set; }
     }
 
     public interface IHaveBags : IShouldHaveBags
@@ -25,6 +24,8 @@ namespace Common
 
     public static class HaveBagsExtensions
     {
+        public static string GetBagsMethod = "GetBagsPropertyName";
+
         public static T SetBagValue<T>(this T instance, string key, object value, bool bagsNotExistThrows = true) where T : IShouldHaveBags
         {
             if (instance == null)
@@ -59,21 +60,35 @@ namespace Common
             var exMessage = string.Empty;
             try
             {
-                bagName = instance is IHaveBagsProperty ? ((IHaveBagsProperty)instance).GetBagsPropertyName() : "Bags";
+                bagName = GuessBagsPropertyName(instance);
                 bags = GetProperty(instance, bagName) as IDictionary<string, object>;
             }
             catch (Exception ex)
             {
                 exMessage = ex.Message;
             }
-            if (bags == null && bagsNotExistThrows)
+
+            if (bags == null)
             {
-                throw new InvalidOperationException(string.Format("没有找到名为{0}的Bags属性。{1}", bagName, exMessage));
+                if (bagsNotExistThrows)
+                {
+                    throw new InvalidOperationException(string.Format("没有找到名为{0}的Bags属性。{1}", bagName, exMessage));
+                }
             }
 
             return bags;
         }
-        
+
+        private static string GuessBagsPropertyName(object model)
+        {
+            var theType = model.GetType();
+            var methodInfo = theType.GetMethod(GetBagsMethod, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            if (methodInfo == null)
+            {
+                return "Bags";
+            }
+            return methodInfo.Invoke(model, null) as string;
+        }
         private static object GetProperty(object target, string name)
         {
             var site = CallSite<Func<CallSite, object, object>>
@@ -81,5 +96,6 @@ namespace Common
                     new[] { CSharpArgumentInfo.Create(0, null) }));
             return site.Target(site, target);
         }
+
     }
 }

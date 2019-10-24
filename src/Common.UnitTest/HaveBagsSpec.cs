@@ -9,17 +9,17 @@ namespace Common
     public class HaveBagsSpec
     {
         [TestMethod]
-        public void Bags_Tell_ShouldOk()
+        public void Bags_Implicit_ShouldOk()
         {
-            var myBag = new Foo();
+            var myBag = new BagsImplicit();
             myBag.SetBagValue("A", 1);
             myBag.GetBagValue("a", 0).ShouldEqual(1);
         }
 
         [TestMethod]
-        public void Bags_Implicit_ShouldOk()
+        public void Bags_Tell_ShouldOk()
         {
-            var myBag = new Bar();
+            var myBag = new BagsTell();
             myBag.SetBagValue("A", 1);
             myBag.GetBagValue("a", 0).ShouldEqual(1);
         }
@@ -27,14 +27,14 @@ namespace Common
         [TestMethod]
         public void Bags_Explicit_ShouldOk()
         {
-            var myBag = new Foo();
+            var myBag = new BagsExplicit();
             myBag.SetBagValue("A", 1);
             myBag.GetBagValue("a", 0).ShouldEqual(1);
         }
 
-        public class Foo : IHaveBagsProperty
+        public class BagsTell : IShouldHaveBags
         {
-            public Foo()
+            public BagsTell()
             {
                 Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             }
@@ -47,18 +47,18 @@ namespace Common
             }
         }
 
-        public class Bar : IHaveBags
+        public class BagsImplicit : IShouldHaveBags
         {
-            public Bar()
+            public BagsImplicit()
             {
                 Bags = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             }
             public IDictionary<string, object> Bags { get; set; }
         }
 
-        public class Blah : IShouldHaveBags
+        public class BagsExplicit : IHaveBags
         {
-            public Blah()
+            public BagsExplicit()
             {
                 Bags = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             }

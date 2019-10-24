@@ -10,6 +10,7 @@
 ## change list
 
 - 
+- 20191024 IHaveBags 2.0.0
 - 20191016 add TowKeyMapping and Spec
 - 20191016 add IHaveBags and Spec
 - 20191014 delete CombineKey and Spec; add CombineKeyParser and Spec
