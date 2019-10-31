@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Common.SignalR.ClientMonitors.ClientMethods.SmartReacts;
 
 namespace Common.SignalR.ClientMonitors.ClientMethods
 {
@@ -10,8 +9,8 @@ namespace Common.SignalR.ClientMonitors.ClientMethods
     public interface IClientMethodInvokeProcess
     {
         float ProcessOrder { set; get; }
-        bool ShouldProcess(IClientMethodInvoke invoke);
-        Task ProcessAsync(IClientMethodInvoke invoke);
+        bool ShouldProcess(ClientMethodInvoke invoke);
+        Task ProcessAsync(ClientMethodInvoke invoke);
     }
 
     public class ClientMethodInvokeProcessBus
@@ -23,7 +22,7 @@ namespace Common.SignalR.ClientMonitors.ClientMethods
             Processes = processes;
         }
 
-        public async Task Process(IClientMethodInvoke invoke)
+        public async Task Process(ClientMethodInvoke invoke)
         {
             var sortedProcesses = Processes
                 .Where(x => x.ShouldProcess(invoke))
@@ -34,7 +33,6 @@ namespace Common.SignalR.ClientMonitors.ClientMethods
             {
                 try
                 {
-                    //todo trace log
                     await sortedProcess.ProcessAsync(invoke).ConfigureAwait(false);
                 }
                 catch (Exception e)

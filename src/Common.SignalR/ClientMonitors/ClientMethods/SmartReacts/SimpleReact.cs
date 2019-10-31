@@ -8,13 +8,13 @@ namespace Common.SignalR.ClientMonitors.ClientMethods.SmartReacts
         public static string SimpleReactActionId = "SimpleReact";
 
         public float ProcessOrder { get; set; }
-        public bool ShouldProcess(IClientMethodInvoke invoke)
+        public bool ShouldProcess(ClientMethodInvoke invoke)
         {
             var smartActionInfo = invoke.TryGetSmartActionInfo<SmartActionInfo>();
             return smartActionInfo != null && SimpleReactActionId.MyEquals(smartActionInfo.SmartActionId);
         }
 
-        public Task ProcessAsync(IClientMethodInvoke invoke)
+        public Task ProcessAsync(ClientMethodInvoke invoke)
         {
             var smartActionInfo = invoke.TryGetSmartActionInfo();
             var reactorClientId = smartActionInfo.ReactorClientId;

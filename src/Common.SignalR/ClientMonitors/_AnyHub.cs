@@ -61,6 +61,8 @@ namespace Common.SignalR.ClientMonitors
         //代表客户端的方法调用，供同步页面等场景使用
         public Task ClientMethodInvoke(ClientMethodInvoke args)
         {
+            //this.Clients.All.SendAsync("", null);
+            //this.Clients.All.SendCoreAsync("", null);
             return _hubEventBus.Raise(new ClientMethodInvokeEvent(this, args));
         }
 
