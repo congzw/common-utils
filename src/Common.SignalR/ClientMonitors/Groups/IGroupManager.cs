@@ -7,6 +7,8 @@ namespace Common.SignalR.ClientMonitors.Groups
     {
         Task<IList<ScopeGroup>> GetGroups(IScopeGroupLocate args);
         Task<ScopeGroup> GetGroup(IScopeGroupLocate args);
+        Task AddGroup(AddGroup args);
+        Task RemoveGroup(RemoveGroup args);
     }
     
     public class ScopeGroup : IScopeGroupLocate
@@ -20,5 +22,23 @@ namespace Common.SignalR.ClientMonitors.Groups
         //todo 控制： 正常，锁定
         //todo 白板： 正常，锁定
         public string State { get; set; }
+    }
+
+    public class AddGroup
+    {
+        public AddGroup()
+        {
+            Items = new List<ScopeGroup>();
+        }
+        public IList<ScopeGroup> Items { get; set; }
+    }
+
+    public class RemoveGroup
+    {
+        public RemoveGroup()
+        {
+            Items = new List<ScopeGroupLocate>();
+        }
+        public IList<ScopeGroupLocate> Items { get; set; }
     }
 }
