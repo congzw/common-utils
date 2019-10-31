@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Common.SignalR.Refs;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Common.SignalR.ClientMonitors.ClientStubs
 {
@@ -30,21 +29,6 @@ namespace Common.SignalR.ClientMonitors.ClientStubs
         public static InvokeClientStub Create(string method)
         {
             return new InvokeClientStub() { Method = method };
-        }
-    }
-
-    public class InvokeClientStubEvent : BaseHubCrossEvent
-    {
-        public InvokeClientStub Args { get; set; }
-
-        public InvokeClientStubEvent(Hub raiseHub, InvokeClientStub args) : base(raiseHub)
-        {
-            Args = args;
-        }
-
-        public InvokeClientStubEvent(HubContextWrapper context, InvokeClientStub args) : base(context)
-        {
-            Args = args;
         }
     }
 }

@@ -17,14 +17,6 @@ namespace Common.SignalR.ClientMonitors.Groups
         public string Group { get; set; }
     }
 
-    public interface IScopeClientGroupRepository
-    {
-        IEnumerable<ScopeClientGroup> QueryScopeClientGroups(IScopeClientGroupLocate args);
-        ScopeClientGroup GetScopeClientGroup(IScopeClientGroupLocate args);
-        void Add(ScopeClientGroup scopeClientGroup);
-        void Remove(ScopeClientGroup scopeClientGroup);
-    }
-
     public class GetScopeClientGroupsArgs : IScopeClientGroupLocate
     {
         public string ScopeId { get; set; }
