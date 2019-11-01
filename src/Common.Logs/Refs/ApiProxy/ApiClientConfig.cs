@@ -1,8 +1,8 @@
 ﻿namespace Common.Logs.Refs.ApiProxy
 {
-    public class ApiProxyConfig
+    public class ApiClientConfig
     {
-        public ApiProxyConfig()
+        public ApiClientConfig()
         {
             BaseUri = "http://localhost:16685/api/trace";
             FailTimeoutMilliseconds = 200;

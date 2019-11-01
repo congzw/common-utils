@@ -4,18 +4,19 @@ using System.Threading.Tasks;
 
 namespace Common.Logs.Refs.ApiProxy
 {
-    public class WebApiProxySmartWrapper : ISimpleApiProxy
+    public class SimpleApiClientSmartWrapper : ISimpleApiClient
     {
-        private readonly ISimpleApiProxy _nullApiProxy = NullSimpleApiProxy.Instance;
+        private readonly ISimpleApiClient _nullApiProxy = NullSimpleApiClient.Instance;
 
-        public WebApiProxySmartWrapper(ISimpleApiProxy apiProxy)
+        public SimpleApiClientSmartWrapper(ISimpleApiClient apiProxy)
         {
             Proxy = apiProxy;
             GetDateNow = () => DateTime.Now;
+            TestConnectionGetApiUri = string.Empty;
             CheckSmart = CheckIfNotOkAndExpired.Create(TimeSpan.FromSeconds(3));
         }
 
-        public void Reset(ISimpleApiProxy apiProxy, TimeSpan? checkApiStatusInterval = null, Func<DateTime> getDateNow = null)
+        public void Reset(ISimpleApiClient apiProxy, TimeSpan? checkApiStatusInterval = null, Func<DateTime> getDateNow = null)
         {
             Proxy = apiProxy ?? throw new ArgumentNullException(nameof(apiProxy));
 
@@ -29,40 +30,41 @@ namespace Common.Logs.Refs.ApiProxy
             }
         }
         
-        public ISimpleApiProxy Proxy { get; set; }
+        public ISimpleApiClient Proxy { get; set; }
 
         public CheckIfNotOkAndExpired CheckSmart { get; set; }
         
         public Func<DateTime> GetDateNow { get; set; }
 
-        public Task<TResult> Get<T, TResult>(T args, TResult defaultResult)
+
+        public Task<TResult> Get<T, TResult>(string method, T args, TResult defaultResult)
         {
             var isOk = CheckApiStatusOkSmart();
             if (!isOk)
             {
-                return _nullApiProxy.Get(args, defaultResult);
+                return _nullApiProxy.Get(method, args, defaultResult);
             }
-            return SafeInvokeTask(Proxy.Get(args, defaultResult), defaultResult);
+            return SafeInvokeTask(Proxy.Get(method, args, defaultResult), defaultResult);
         }
 
-        public Task Post<T>(T args)
+        public Task Post<T>(string method, T args)
         {
             var isOk = CheckApiStatusOkSmart();
             if (!isOk)
             {
-                return _nullApiProxy.Post(args);
+                return _nullApiProxy.Post(method, args);
             }
-            return SafeInvokeTask(Proxy.Post(args));
+            return SafeInvokeTask(Proxy.Post(method, args));
         }
 
-        public Task<TResult> Post<T, TResult>(T args, TResult defaultResult)
+        public Task<TResult> Post<T, TResult>(string method, T args, TResult defaultResult)
         {
             var isOk = CheckApiStatusOkSmart();
             if (!isOk)
             {
-                return _nullApiProxy.Post(args, defaultResult);
+                return _nullApiProxy.Post(method, args, defaultResult);
             }
-            return SafeInvokeTask(Proxy.Post(args, defaultResult), defaultResult);
+            return SafeInvokeTask(Proxy.Post(method, args, defaultResult), defaultResult);
         }
         
         private bool CheckApiStatusOkSmart()
@@ -98,16 +100,25 @@ namespace Common.Logs.Refs.ApiProxy
             });
         }
 
+        public string TestConnectionGetApiUri { get; set; }
+        public int TestTimeoutMilliseconds { get; set; }
+
         public Task<bool> TryTestApiConnection()
         {
-            return Proxy.TryTestApiConnection();
+            if (string.IsNullOrWhiteSpace(TestConnectionGetApiUri))
+            {
+                return Task.FromResult(false);
+            }
+
+            var webApiHelper = WebApiHelper.Resolve();
+            return webApiHelper.CheckTargetStatus(TestConnectionGetApiUri, TestTimeoutMilliseconds);
         }
 
         #region for di extensions and simple use
 
-        private static readonly WebApiProxySmartWrapper Instance = new WebApiProxySmartWrapper(NullSimpleApiProxy.Instance);
+        private static readonly SimpleApiClientSmartWrapper Instance = new SimpleApiClientSmartWrapper(NullSimpleApiClient.Instance);
 
-        public static Func<WebApiProxySmartWrapper> Resolve { get; set; } = () => Instance;
+        public static Func<SimpleApiClientSmartWrapper> Resolve { get; set; } = () => Instance;
 
         #endregion
     }

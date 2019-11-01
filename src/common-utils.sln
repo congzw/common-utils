@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logs", "Logs", "{7E599FC1-5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logs", "Common.Logs\Common.Logs.csproj", "{B85DB6DB-F21B-4AA1-A7A1-BAA1949F74FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoLogApi", "DemoLogApi\DemoLogApi.csproj", "{DA178AE8-EB3E-4C91-808A-E532528EA6BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,10 @@ Global
 		{B85DB6DB-F21B-4AA1-A7A1-BAA1949F74FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B85DB6DB-F21B-4AA1-A7A1-BAA1949F74FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B85DB6DB-F21B-4AA1-A7A1-BAA1949F74FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA178AE8-EB3E-4C91-808A-E532528EA6BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA178AE8-EB3E-4C91-808A-E532528EA6BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA178AE8-EB3E-4C91-808A-E532528EA6BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA178AE8-EB3E-4C91-808A-E532528EA6BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +68,7 @@ Global
 		{6B8971F3-E49D-48D1-91EA-C4E3DD5A17C0} = {2AED01DB-F3D4-4008-9B18-869865978B21}
 		{432FF3C6-3A1D-4DC6-AF7E-B8F7276CE269} = {2AED01DB-F3D4-4008-9B18-869865978B21}
 		{B85DB6DB-F21B-4AA1-A7A1-BAA1949F74FC} = {7E599FC1-5683-4D47-B908-C773848B3A3C}
+		{DA178AE8-EB3E-4C91-808A-E532528EA6BD} = {7E599FC1-5683-4D47-B908-C773848B3A3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C15D5D5A-B1FB-4C85-954D-9F6A8F3D52F7}
