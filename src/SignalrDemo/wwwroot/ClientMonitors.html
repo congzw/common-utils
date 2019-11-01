@@ -34,8 +34,11 @@
                         <option value="2">192.168.1.22</option>
                         <option value="3">192.168.1.23</option>
                     </select>
-                    <input type="button" class="btn btn-warning" id="btnUpdate" value="Update" />
-                    <input type="button" class="btn btn-warning" id="btnUpdateState" value="UpdateState" />
+                </div>
+                <div>
+                    <input type="button" class="btn btn-primary" id="btnUpdate" value="Update" />
+                    <input type="button" class="btn btn-primary" id="btnUpdateState" value="UpdateState" />
+                    <input type="button" class="btn btn-primary" id="btnUpdateConnections" value="UpdateConnections" />
                 </div>
             </div>
 
@@ -118,8 +121,14 @@
                     this.currentMessage = args.message;
                 },
                 updateState: function (args) {
-                    console.log('call changeState', args);
+                    console.log('call updateState', args);
                     this.currentState = args.state;
+                },
+                updateConnections: function (args) {
+                    console.log('call updateConnections', args);
+                    if (args.clientConnections) {
+                        this.clientConnections = args.clientConnections;
+                    }
                 },
                 connect: function () {
                     var _this = this;
@@ -157,8 +166,6 @@
                                 connectionHub.invoke(invokeClientStub, theArgs);
                                 event.preventDefault();
                             });
-
-
                             document.getElementById('btnUpdateState').addEventListener('click', function (event) {
 
                                 var ticks = ((new Date().getTime() * 10000) + 621355968000000000);
