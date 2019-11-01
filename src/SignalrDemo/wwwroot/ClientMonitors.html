@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>连接状态管理</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap/bootstrap.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/index.css">
     <script type="text/javascript" src="lib/signalr.js"></script>
     <script type="text/javascript" src="lib/vue.js"></script>
@@ -13,6 +14,7 @@
     <div class="wrapper" id="app">
         <div class="container">
             <h2>Message: <span>  {{ currentMessage }}</span></h2>
+            <h2>State: <span>  {{ currentState }}</span></h2>
             <hr />
             <div class="select-bar">
                 <div class="select-label">筛选：</div>
@@ -32,7 +34,8 @@
                         <option value="2">192.168.1.22</option>
                         <option value="3">192.168.1.23</option>
                     </select>
-                    <input type="button" class="btn btn-warning" id="btnUpdate" value="Update"/>
+                    <input type="button" class="btn btn-warning" id="btnUpdate" value="Update" />
+                    <input type="button" class="btn btn-warning" id="btnUpdateState" value="UpdateState" />
                 </div>
             </div>
 
@@ -44,28 +47,28 @@
                 <!--table-->
                 <table class="table table-bordered table-striped" v-if="isTableLayout" key="table">
                     <thead>
-                    <tr>
-                        <th>课程</th>
-                        <th>客户端</th>
-                        <th>连接时间</th>
-                        <th>上次更新状态</th>
-                    </tr>
+                        <tr>
+                            <th>课程</th>
+                            <th>客户端</th>
+                            <th>连接时间</th>
+                            <th>上次更新状态</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in ScopedConnections">
-                        <td>
-                            {{item.scopeGroupId}}
-                        </td>
-                        <td>
-                            {{item.clientId}}
-                        </td>
-                        <td>
-                            {{item.createAt}}
-                        </td>
-                        <td>
-                            <span class="label success">{{item.lastUpdateAt}}</span>
-                        </td>
-                    </tr>
+                        <tr v-for="item in clientConnections">
+                            <td>
+                                {{item.scopeGroupId}}
+                            </td>
+                            <td>
+                                {{item.clientId}}
+                            </td>
+                            <td>
+                                {{item.createAt}}
+                            </td>
+                            <td>
+                                <span class="label success">{{item.lastUpdateAt}}</span>
+                            </td>
+                        </tr>
                 </table>
                 <!-- panel布局 -->
                 <div v-else="!isTableLayout" class="panel-wrapper" key="poanel">
@@ -90,9 +93,9 @@
         var app = new Vue({
             el: '#app',
             data: {
-                ScopedConnections: [],
                 clientConnections: [],
                 currentMessage: 'Hello',
+                currentState: 'Foo',
                 isTableLayout: true // 默认表格布局
             },
             created: function () {
@@ -111,7 +114,12 @@
             },
             methods: {
                 updateMessage: function (args) {
+                    console.log('call updateMessage', args);
                     this.currentMessage = args.message;
+                },
+                updateState: function (args) {
+                    console.log('call changeState', args);
+                    this.currentState = args.state;
                 },
                 connect: function () {
                     var _this = this;
@@ -126,9 +134,9 @@
                         .build();
                     
                     connectionHub.on(invokeClientStub, function (theArgs) {
-                        console.log(theArgs);
+                        console.log('callback: ' + invokeClientStub, theArgs);
                         if (theArgs.method) {
-                            _this[theArgs.method](theArgs.args);
+                            _this[theArgs.method](theArgs.methodArgs);
                         }
                         //todo update _this.clientConnections;
                     });
@@ -141,9 +149,24 @@
                                 var ticks = ((new Date().getTime() * 10000) + 621355968000000000);
                                 var theArgs = {
                                     method: "updateMessage",
-                                    args: { message: '[' + ticks + ']' },
+                                    methodArgs: { message: '[' + ticks + ']' },
                                     bags: {
                                         foo: "foo"
+                                    }
+                                };
+                                connectionHub.invoke(invokeClientStub, theArgs);
+                                event.preventDefault();
+                            });
+
+
+                            document.getElementById('btnUpdateState').addEventListener('click', function (event) {
+
+                                var ticks = ((new Date().getTime() * 10000) + 621355968000000000);
+                                var theArgs = {
+                                    method: "updateState",
+                                    methodArgs: { state: '<' + ticks + '>' },
+                                    bags: {
+                                        bar: "bar"
                                     }
                                 };
                                 connectionHub.invoke(invokeClientStub, theArgs);
@@ -154,7 +177,6 @@
                             console.error(error.message);
                         });
                 },
-
                 changeLayout(layoutName) {
                     this.isTableLayout = !this.isTableLayout;
                 }

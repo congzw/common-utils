@@ -24,11 +24,12 @@ namespace Common.SignalR.ClientMonitors.ClientStubs
         }
 
         public string Method { get; set; }
+        public object MethodArgs { get; set; }
         public IDictionary<string, object> Bags { get; set; }
 
-        public static InvokeClientStub Create(string method)
+        public static InvokeClientStub Create(string method, object methodArgs)
         {
-            return new InvokeClientStub() { Method = method };
+            return new InvokeClientStub() { Method = method, MethodArgs = methodArgs};
         }
     }
 }

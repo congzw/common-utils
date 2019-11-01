@@ -19,7 +19,7 @@ namespace SignalrDemo
         {
             var fileServerOptions = new FileServerOptions();
             var defaultPages = new List<string>();
-            defaultPages.Add("index.html");
+            defaultPages.Add("ClientMonitors.html");
             fileServerOptions.DefaultFilesOptions.DefaultFileNames = defaultPages;
 
             app.UseFileServer(fileServerOptions);
