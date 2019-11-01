@@ -4,11 +4,11 @@ using Common.Logs.Refs;
 
 namespace Common.Logs.Remotes
 {
-    public class ApiLogSender : ILogSender
+    public class ApiLogSender : ILogMessageApi
     {
         public LogSenderConfig Config { get; set; }
 
-        public Task SendAsync(LogMessageArgs args)
+        public Task LogMessage(LogMessageArgs args)
         {
             //todo
             return Task.CompletedTask;
@@ -33,7 +33,7 @@ namespace Common.Logs.Remotes
                 apiLogSender = new ApiLogSender();
             }
             Init(config);
-            LogSender.Resolve = () => apiLogSender;
+            LogMessageApi.Resolve = () => apiLogSender;
         }
 
         private static void Init(LogSenderConfig config)

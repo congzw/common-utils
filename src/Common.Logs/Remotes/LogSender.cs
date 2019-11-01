@@ -4,22 +4,22 @@ using Common.Logs.Refs;
 
 namespace Common.Logs.Remotes
 {
-    public interface ILogSender
+    public interface ILogMessageApi
     {
-        Task SendAsync(LogMessageArgs args);
+        Task LogMessage(LogMessageArgs args);
     }
 
-    public class LogSender : ILogSender
+    public class LogMessageApi : ILogMessageApi
     {
-        public Task SendAsync(LogMessageArgs args)
+        public Task LogMessage(LogMessageArgs args)
         {
             return Task.CompletedTask;
         }
 
         #region for di extensions
 
-        private static readonly Lazy<ILogSender> LazyInstance = new Lazy<ILogSender>(() => new LogSender());
-        public static Func<ILogSender> Resolve { get; set; } = () => LazyInstance.Value;
+        private static readonly Lazy<ILogMessageApi> LazyInstance = new Lazy<ILogMessageApi>(() => new LogMessageApi());
+        public static Func<ILogMessageApi> Resolve { get; set; } = () => LazyInstance.Value;
 
         #endregion
     }
@@ -33,8 +33,8 @@ namespace Common.Logs.Remotes
             var logActions = simpleLogFactory.LogActions;
             logActions[SendLog] = new LogMessageAction(SendLog, true, args =>
             {
-                var logSender = LogSender.Resolve();
-                logSender.SendAsync(args);
+                var logSender = LogMessageApi.Resolve();
+                logSender.LogMessage(args);
             });
             return simpleLogFactory;
         }
