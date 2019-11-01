@@ -5,7 +5,7 @@ using Common.SignalR.ClientMonitors.Groups;
 
 namespace Common.SignalR.ClientMonitors
 {
-    public interface IClientMonitor : IClientConnectionManager, IScopeGroupManager, IClientGroupManager, IClientMethodManager, IClientStubManager
+    public interface IClientMonitor : IClientConnectionManager//, IScopeGroupManager, IClientGroupManager, IClientMethodManager, IClientStubManager
     {
     }
 }

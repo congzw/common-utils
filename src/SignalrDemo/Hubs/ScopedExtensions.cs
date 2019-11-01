@@ -1,41 +1,36 @@
 ﻿using System.Threading.Tasks;
+using Common.SignalR.ClientMonitors;
+using Common.SignalR.ClientMonitors.ClientMethods;
+using Common.SignalR.ClientMonitors.Connections;
+using Common.SignalR.Refs.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Common;
 
 // ReSharper disable CheckNamespace
 
 namespace Common.SignalR.Scoped
 {
-    public static class ScopedHubExtensions
+    public static class ScopedExtensions
     {
-        public static IServiceCollection AddScopedHub(this IServiceCollection services)
+        public static IServiceCollection AddClientMonitors(this IServiceCollection services)
         {
             services.AddScoped<HubEventBus>();
             services.AddAllImpl<ISignalREventHandler>(ServiceLifetime.Scoped, typeof(SignalREventHandlerDecorator));
-            //todo config
+
+
+            services.AddScoped<ClientMethodInvokeProcessBus>();
+            services.AddAllImpl<IClientMethodInvokeProcess>(ServiceLifetime.Scoped);
+
+            //todo by config
             //var traceEventBus = false;
             //if (traceEventBus)
             //{
             //    services.Decorate<ISignalREventHandler, SignalREventHandlerDecorator>();
             //}
 
-            services.AddSingleton<IScopedConnectionRepository, MemoryScopedConnectionRepository>();
-            services.AddSingleton<ScopedConnectionManager>();
+            services.AddSingleton<IClientConnectionRepository, ClientConnectionRepository>();
+            services.AddSingleton<IClientMonitor, ClientMonitor>();
             return services;
         }
-
-        //不支持继承，不能这么用！
-        //public static void WrapHub<THub, THubWrap>(this IServiceCollection services)
-        //    where THub : Hub
-        //    where THubWrap : THub
-        //{
-        //    services.AddScoped<THubWrap>();
-        //    services.Replace(ServiceDescriptor.Scoped<THub>(sp =>
-        //    {
-        //        var anyHubWrap = sp.GetService<THubWrap>();
-        //        return anyHubWrap;
-        //    }));
-        //}
     }
 
     public class SignalREventHandlerDecorator : ISignalREventHandler

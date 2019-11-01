@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Common.SignalR.ClientMonitors;
 using Common.SignalR.Scoped;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,7 +12,7 @@ namespace SignalrDemo
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSignalR();
-            services.AddScopedHub();
+            services.AddClientMonitors();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -25,7 +26,7 @@ namespace SignalrDemo
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<AnyHub>("/ScopedHub");
+                routes.MapHub<_AnyHub>("/DemoHub");
             });
         }
     }
