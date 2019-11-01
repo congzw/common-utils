@@ -23,4 +23,20 @@ namespace Common.Logs.Remotes
 
         #endregion
     }
+
+    public static class LogSenderInit
+    {
+        public static string SendLog = "SendLog";
+
+        public static ISimpleLogFactory Init(ISimpleLogFactory simpleLogFactory)
+        {
+            var logActions = simpleLogFactory.LogActions;
+            logActions[SendLog] = new LogMessageAction(SendLog, true, args =>
+            {
+                var logSender = LogSender.Resolve();
+                logSender.SendAsync(args);
+            });
+            return simpleLogFactory;
+        }
+    }
 }
