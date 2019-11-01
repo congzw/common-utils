@@ -1,33 +1,58 @@
 ﻿using System;
-using System.Globalization;
 using System.Threading.Tasks;
-using Common.Logs.Refs.ApiProxy;
+using Common.Logs.Refs;
 
 namespace Common.Logs.Api.Proxy
 {
     public interface ILogApiProxy : ILogApi
     {
-        //for test connection state
-        Task<string> GetDate();
+    }
+    
+    public class ApiClientConfig
+    {
+        public ApiClientConfig()
+        {
+            BaseUri = "http://localhost:16685/api/trace";
+            FailTimeoutMilliseconds = 200;
+        }
+
+        public int FailTimeoutMilliseconds { get; set; }
+        public string BaseUri { get; set; }
+
+
+        private bool fixBaseUri = false;
+        public string GetRequestUri(string method)
+        {
+            if (!fixBaseUri)
+            {
+                BaseUri = BaseUri.TrimEnd('/') + "/";
+            }
+
+            return BaseUri + method;
+        }
     }
 
     public class LogApiProxy : ILogApiProxy
     {
-        private ISimpleApiClient _proxy = null;
+        private readonly IWebApiHelper _apiHelper = null;
+        private readonly ApiClientConfig _config;
 
-        public LogApiProxy(ISimpleApiClient apiProxy)
+        public LogApiProxy(IWebApiHelper webApiHelper, ApiClientConfig config)
         {
-            _proxy = apiProxy;
+            _apiHelper = webApiHelper;
+            _config = config;
         }
 
         public Task Log(LogArgs args)
         {
-            return _proxy.Post(nameof(Log), args);
+            var requestUri = _config.GetRequestUri(nameof(Log));
+            return _apiHelper.PostAsJson(requestUri, args);
         }
 
-        public Task<string> GetDate()
-        {
-            return Task.FromResult(DateTime.Now.ToString(CultureInfo.InvariantCulture));
-        }
+        #region for di extensions and simple use
+        
+        public static Func<ILogApiProxy> Resolve { get; set; } = () => null;
+
+        #endregion
     }
 }

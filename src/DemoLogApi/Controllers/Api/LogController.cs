@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Common.Logs.Api;
 using Common.Logs.Api.Proxy;
-using Common.Logs.Refs.ApiProxy;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DemoLogApi.Controllers.Api
@@ -45,8 +44,7 @@ namespace DemoLogApi.Controllers.Api
         [HttpGet]
         public Task LogCallTest()
         {
-            var apiClient = SimpleApiClientSmartWrapper.Resolve();
-            var logApiProxy = new LogApiProxy(apiClient);
+            var logApiProxy = LogApiProxy.Resolve();
             return logApiProxy.Log(new LogArgs() {Category = "Foo", Level = 2, Message = "ABC"});
         }
     }
