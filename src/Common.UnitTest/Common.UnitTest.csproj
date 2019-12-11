@@ -64,6 +64,7 @@
     <Compile Include="SimpleProcessRunnerSpec.cs" />
     <Compile Include="SimpleQueryStringSpec.cs" />
     <Compile Include="TowKeyMappingSpec.cs" />
+    <Compile Include="TypeRelationsSpec.cs" />
     <Compile Include="_Helpers\AssertHelper.cs" />
     <Compile Include="_Helpers\AsyncHelper.cs" />
     <Compile Include="_Helpers\TestExtensions.cs" />
