@@ -9,6 +9,8 @@
 
 ## change list
 
+
+- 20191212 add SimpleServiceLocator and Spec
 - 20191211 add TypeRelations and Spec
 - 20191024 IHaveBags 2.0.0
 - 20191016 add TowKeyMapping and Spec
