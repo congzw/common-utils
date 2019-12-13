@@ -9,7 +9,8 @@
 
 ## change list
 
-
+- 
+- 20191213 add IHaveBags json support 2.1.0
 - 20191212 add SimpleServiceLocator and Spec
 - 20191211 add TypeRelations and Spec
 - 20191024 IHaveBags 2.0.0

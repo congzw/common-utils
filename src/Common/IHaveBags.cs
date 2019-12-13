@@ -5,6 +5,7 @@ using System.Reflection;
 // ReSharper disable CheckNamespace
 
 // change list:
+// 20191213 add json support 2.1.0
 // 20191024 use reflection 2.0.0
 // 20191016 first release 1.0.0
 namespace Common
@@ -19,38 +20,11 @@ namespace Common
         IDictionary<string, object> Bags { get; set; }
     }
 
-    public static class HaveBagsExtensions
+    public static class ShouldHaveBagsExtensions
     {
         public static string GetBagsMethod = "GetBagsPropertyName";
 
-        public static T SetBagValue<T>(this T instance, string key, object value, bool bagsNotExistThrows = true) where T : IShouldHaveBags
-        {
-            if (instance == null)
-            {
-                return instance;
-            }
-
-            var bags = TryGetBags(instance, bagsNotExistThrows);
-            if (bags == null)
-            {
-                return instance;
-            }
-            bags[key] = value;
-            return instance;
-        }
-
-        public static TValue GetBagValue<T, TValue>(this T instance, string key, TValue defaultValue, bool bagsNotExistThrows = true) where T : IShouldHaveBags
-        {
-            var bags = TryGetBags(instance, bagsNotExistThrows);
-            if (bags == null || !bags.ContainsKey(key))
-            {
-                return defaultValue;
-            }
-
-            return (TValue)bags[key];
-        }
-
-        private static IDictionary<string, object> TryGetBags<T>(T instance, bool bagsNotExistThrows) where T : IShouldHaveBags
+        public static IDictionary<string, object> TryGetBags(this object instance, bool bagsNotExistThrows)
         {
             IDictionary<string, object> bags = null;
             var bagName = string.Empty;
@@ -76,7 +50,7 @@ namespace Common
             return bags;
         }
 
-        private static string GuessBagsPropertyName(object model)
+        public static string GuessBagsPropertyName(object model)
         {
             var theType = model.GetType();
             var methodInfo = theType.GetMethod(GetBagsMethod, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
@@ -86,6 +60,7 @@ namespace Common
             }
             return methodInfo.Invoke(model, null) as string;
         }
+
         private static object GetProperty(object model, string name)
         {
             var theType = model.GetType();
@@ -96,6 +71,86 @@ namespace Common
             }
             return propInfo.GetValue(model, null);
         }
-
     }
+
+    public static class HaveBagsExtensions
+    {
+        public static T GetBagValue<T>(this IShouldHaveBags haveBags, string itemKey, T defaultItemValue = default(T))
+        {
+            var bags = haveBags.TryGetBags(true);
+            if (!bags.ContainsKey(itemKey))
+            {
+                return defaultItemValue;
+            }
+
+            var bagItemValue = bags[itemKey];
+            var bagItemConvertTo = SafeConvertTo<T>(bagItemValue);
+            return bagItemConvertTo;
+        }
+
+        public static THaveBags SetBagValue<THaveBags, T>(this THaveBags haveBags, string itemKey, T itemValue) where THaveBags : IShouldHaveBags
+        {
+            var bags = haveBags.TryGetBags(true);
+            bags[itemKey] = itemValue;
+            return haveBags;
+        }
+
+        private static T SafeConvertTo<T>(object bagItemValue)
+        {
+            if (bagItemValue is T itemValue)
+            {
+                return itemValue;
+            }
+            
+            if (SimpleConvert.Current == null)
+            {
+                throw new InvalidOperationException("无法完成转换:" + typeof(T).Name);
+            }
+            return SimpleConvert.Current.SafeConvertTo<T>(bagItemValue);
+        }
+    }
+
+    #region for extensions
+
+    //public interface ISafeConvert
+    //{
+    //    T SafeConvertTo<T>(object value);
+    //}
+
+    //public static class SimpleConvert
+    //{
+    //    private static Func<ISafeConvert> _safeConvertFunc;
+
+    //    public static ISafeConvert Current => _safeConvertFunc?.Invoke();
+
+    //    public static void Initialize(Func<ISafeConvert> safeConvertFunc)
+    //    {
+    //        _safeConvertFunc = safeConvertFunc ?? throw new ArgumentNullException(nameof(safeConvertFunc));
+    //    }
+    //}
+
+    ////how to use:
+    ////SimpleConvert.Initialize(() => SafeConvert.Instance);
+    //public class SafeConvert : ISafeConvert
+    //{
+    //    public T SafeConvertTo<T>(object value)
+    //    {
+    //        if (value is T modelValue)
+    //        {
+    //            return modelValue;
+    //        }
+    //        //处理网络序列化
+    //        if (value is JObject theJObject)
+    //        {
+    //            return theJObject.ToObject<T>();
+    //        }
+    //        var json = JsonConvert.SerializeObject(value);
+    //        var argsT = JsonConvert.DeserializeObject<T>(json);
+    //        return argsT;
+    //    }
+
+    //    public static SafeConvert Instance = new SafeConvert();
+    //}
+
+    #endregion
 }
