@@ -32,6 +32,21 @@ namespace Common
             myBag.GetBagValue("a", 0).ShouldEqual(1);
         }
 
+
+        [TestMethod]
+        public void Bags_Dic_ShouldOk()
+        {
+            var myBag = new BagsExplicit();
+            var argsDic = myBag.GetBagValue("args", new ConcurrentDictionary<string, object>());
+            argsDic["Name"] = "a";
+            myBag.SetBagValue("args", argsDic);
+            var argsDic2 = myBag.GetBagValue("args", new ConcurrentDictionary<string, object>());
+            foreach (var o in argsDic2)
+            {
+                string.Format("{0}:{1}", o.Key, o.Value).Log();
+            }
+        }
+
         public class BagsTell : IShouldHaveBags
         {
             public BagsTell()

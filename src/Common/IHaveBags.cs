@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 // ReSharper disable CheckNamespace
@@ -75,25 +77,67 @@ namespace Common
 
     public static class HaveBagsExtensions
     {
-        public static T GetBagValue<T>(this IShouldHaveBags haveBags, string itemKey, T defaultItemValue = default(T))
+        public static T GetBagValue<T>(this IShouldHaveBags haveBags, string bagKey, T defaultBagValue = default(T))
         {
             var bags = haveBags.TryGetBags(true);
-            if (!bags.ContainsKey(itemKey))
+            if (!bags.ContainsKey(bagKey))
             {
-                return defaultItemValue;
+                return defaultBagValue;
             }
 
-            var bagItemValue = bags[itemKey];
+            var bagItemValue = bags[bagKey];
             var bagItemConvertTo = SafeConvertTo<T>(bagItemValue);
             return bagItemConvertTo;
         }
 
-        public static THaveBags SetBagValue<THaveBags, T>(this THaveBags haveBags, string itemKey, T itemValue) where THaveBags : IShouldHaveBags
+        public static THaveBags SetBagValue<THaveBags>(this THaveBags haveBags, string bagKey, object bagValue) where THaveBags : IShouldHaveBags
         {
             var bags = haveBags.TryGetBags(true);
-            bags[itemKey] = itemValue;
+            bags[bagKey] = bagValue;
             return haveBags;
         }
+        
+        public static T GetBagSubValue<T>(this IShouldHaveBags haveBags, string bagKey, string subKey, T defaultSubValue)
+        {
+            var bags = haveBags.TryGetBags(true);
+            var containsBagValue = bags.ContainsKey(bagKey);
+            if (!containsBagValue)
+            {
+                return defaultSubValue;
+            }
+
+            var theBagValue = bags[bagKey];
+
+            var subDic = SafeConvertTo<IDictionary<string, object>>(theBagValue);
+            var theSubKey = subDic.Keys.SingleOrDefault(x => x.Equals(subKey, StringComparison.OrdinalIgnoreCase));
+            if (theSubKey == null)
+            {
+                return defaultSubValue;
+            }
+
+            var convertTo = SafeConvertTo<T>(subDic[theSubKey]);
+            return convertTo;
+        }
+        
+        public static void SetBagSubValue(this IShouldHaveBags haveBags, string bagKey, string subKey, object subValue)
+        {
+            var bags = haveBags.TryGetBags(true);
+            var containsBagValue = bags.ContainsKey(bagKey);
+            if (!containsBagValue)
+            {
+                bags[bagKey] = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase); 
+            }
+
+
+            var convertToDic = SafeConvertTo<IDictionary<string, object>>(bags[bagKey]);
+            if (convertToDic == null)
+            {
+                convertToDic = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            convertToDic[subKey] = subValue;
+        }
+
 
         private static T SafeConvertTo<T>(object bagItemValue)
         {
