@@ -17,18 +17,19 @@ namespace Common.Data
         new TPk Id { get; set; }
     }
 
-    public abstract class BaseSimpleEntity<TPk> : ISimpleEntity<TPk>
+    public abstract class SimpleEntityBase<TPk> : ISimpleEntity<TPk>
     {
         object ISimpleEntity.Id
         {
             get => Id;
-            set => Id = (TPk)value;
+            set => Id = (TPk) value;
         }
 
         public virtual TPk Id { get; set; }
 
         private readonly TPk _defaultIdValue = default(TPk);
         private int? _oldHashCode;
+
         public override int GetHashCode()
         {
             // once we have a hashcode we'll never change it
@@ -48,7 +49,7 @@ namespace Common.Data
 
         public override bool Equals(object obj)
         {
-            var other = obj as BaseSimpleEntity<TPk>;
+            var other = obj as SimpleEntityBase<TPk>;
             if (other == null) return false;
 
             var thisIsNew = Equals(Id, _defaultIdValue);
@@ -60,15 +61,27 @@ namespace Common.Data
             return Id.Equals(other.Id);
         }
 
-        public static bool operator ==(BaseSimpleEntity<TPk> lhs, BaseSimpleEntity<TPk> rhs)
+        public static bool operator ==(SimpleEntityBase<TPk> lhs, SimpleEntityBase<TPk> rhs)
         {
             return Equals(lhs, rhs);
         }
-        public static bool operator !=(BaseSimpleEntity<TPk> lhs, BaseSimpleEntity<TPk> rhs)
+        public static bool operator !=(SimpleEntityBase<TPk> lhs, SimpleEntityBase<TPk> rhs)
         {
             return !Equals(lhs, rhs);
         }
     }
+
+    #region guid base entity
+    
+    public abstract class EntityBaseGuid<T> : SimpleEntityBase<Guid> where T : EntityBaseGuid<T>
+    {
+    }
+
+    public abstract class EntityBaseGuid : EntityBaseGuid<EntityBaseGuid>
+    {
+    }
+
+    #endregion
 
     public interface ISimpleRepository
     {

@@ -102,6 +102,11 @@ namespace Common.Data
             memoryRepository.Query<MockBoy>().Count().ShouldEqual(1);
             memoryRepository.Query<MockGirl>().Count().ShouldEqual(1);
             memoryRepository.Query<MockKid>().Count().ShouldEqual(2);
+
+            memoryRepository.Get<MockKid>(1).ShouldNotNull();
+            memoryRepository.Get<MockBoy>(1).ShouldNotNull();
+            memoryRepository.Get<MockGirl>(1).ShouldNull();
+
         }
 
         private ISimpleRepository CreateRepository(bool init)
@@ -135,18 +140,27 @@ namespace Common.Data
         }
 
         #region mocks
+        
+        public abstract class EntityBaseInt<T> : SimpleEntityBase<int> where T : EntityBaseInt<T>
+        {
+        }
 
-        public class MockUser : BaseSimpleEntity<int>
+        public abstract class EntityBaseInt : EntityBaseInt<EntityBaseInt>
+        {
+        }
+
+
+        public class MockUser : EntityBaseInt
         {
             public string UserName { get; set; }
         }
 
-        public class MockRole : BaseSimpleEntity<int>
+        public class MockRole : EntityBaseInt
         {
             public string Name { get; set; }
         }
 
-        public abstract class MockKid : BaseSimpleEntity<int>
+        public abstract class MockKid : EntityBaseInt
         {
         }
         public class MockBoy : MockKid
