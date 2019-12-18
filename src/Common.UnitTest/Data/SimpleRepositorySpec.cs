@@ -133,27 +133,32 @@ namespace Common.Data
             }
             return memoryRepository;
         }
+
+        #region mocks
+
+        public class MockUser : BaseSimpleEntity<int>
+        {
+            public string UserName { get; set; }
+        }
+
+        public class MockRole : BaseSimpleEntity<int>
+        {
+            public string Name { get; set; }
+        }
+
+        public abstract class MockKid : BaseSimpleEntity<int>
+        {
+        }
+        public class MockBoy : MockKid
+        {
+
+        }
+        public class MockGirl : MockKid
+        {
+
+        }
+
+        #endregion
     }
 
-    public class MockUser : BaseSimpleEntity<int>
-    {
-        public string UserName { get; set; }
-    }
-
-    public class MockRole : BaseSimpleEntity<int>
-    {
-        public string Name { get; set; }
-    }
-
-    public abstract class MockKid : BaseSimpleEntity<int>
-    {
-    }
-    public class MockBoy : MockKid
-    {
-
-    }
-    public class MockGirl : MockKid
-    {
-
-    }
 }
