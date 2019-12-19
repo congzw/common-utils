@@ -2,144 +2,67 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Net.NetworkInformation;
+using System.Reflection;
 
+// 20191219: V 0.2.0, first release
 // 20191218: V 0.1.0, first release
 // ReSharper disable CheckNamespace
 namespace Common.Data
 {
-    public interface ISimpleEntity
-    {
-        object Id { get; set; }
-    }
-
-    public interface ISimpleEntity<TPk> : ISimpleEntity
-    {
-        new TPk Id { get; set; }
-    }
-
-    public abstract class SimpleEntityBase<TPk> : ISimpleEntity<TPk>
-    {
-        object ISimpleEntity.Id
-        {
-            get => Id;
-            set => Id = (TPk) value;
-        }
-
-        public virtual TPk Id { get; set; }
-
-        private readonly TPk _defaultIdValue = default(TPk);
-        private int? _oldHashCode;
-
-        public override int GetHashCode()
-        {
-            // once we have a hashcode we'll never change it
-            if (_oldHashCode.HasValue)
-                return _oldHashCode.Value;
-            // when this instance is new we use the base hash code
-            // and remember it, so an instance can NEVER change its
-            // hash code.
-            var thisIsNew = Equals(Id, _defaultIdValue);
-            if (thisIsNew)
-            {
-                _oldHashCode = base.GetHashCode();
-                return _oldHashCode.Value;
-            }
-            return Id.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            var other = obj as SimpleEntityBase<TPk>;
-            if (other == null) return false;
-
-            var thisIsNew = Equals(Id, _defaultIdValue);
-            var otherIsNew = Equals(other.Id, _defaultIdValue);
-
-            if (thisIsNew && otherIsNew)
-                return ReferenceEquals(this, other);
-
-            return Id.Equals(other.Id);
-        }
-
-        public static bool operator ==(SimpleEntityBase<TPk> lhs, SimpleEntityBase<TPk> rhs)
-        {
-            return Equals(lhs, rhs);
-        }
-        public static bool operator !=(SimpleEntityBase<TPk> lhs, SimpleEntityBase<TPk> rhs)
-        {
-            return !Equals(lhs, rhs);
-        }
-    }
-
-    #region guid base entity
-    
-    public abstract class EntityBaseGuid<T> : SimpleEntityBase<Guid> where T : EntityBaseGuid<T>
-    {
-    }
-
-    public abstract class EntityBaseGuid : EntityBaseGuid<EntityBaseGuid>
-    {
-    }
-
-    #endregion
-
     public interface ISimpleRepository
     {
-        IQueryable<T> Query<T>() where T : ISimpleEntity;
-        T Get<T>(object id) where T : ISimpleEntity;
+        IEnumerable<T> Query<T>() where T : class;
+        T Get<T>(Expression<Func<T, bool>> predicate) where T : class;
+        void Add<T>(params T[] entities) where T : class;
+        void Update<T>(params T[] entities) where T : class;
+        void Delete<T>(params T[] entities) where T : class;
+    }
+    
+    public static class SimpleReposExtensions
+    {
+        //public static object TryGetIdValue(this object model, string propName = "Id")
+        //{
+        //    //x => x.{propName}
+        //    var paramExpression = Expression.Parameter(model.GetType());
+        //    var memberExpression = CreatePropertyExpression(paramExpression, propName);
+        //    var propertyInfo = memberExpression.Member as PropertyInfo;
+        //    if (propertyInfo == null)
+        //    {
+        //        return null;
+        //    }
+        //    var o = propertyInfo.GetValue(model, null);
+        //    return o;
+        //}
 
+        public static T Get<T>(this ISimpleRepository simpleRepos, object id, string idName = "Id") where T : class
+        {
+            //Expression<Func<TSource, TResult>> selector
+            var predicate = CreatePredicate<T>(id, idName);
+            var theOne = simpleRepos.Get(predicate);
+            return theOne;
+        }
 
-        /// <summary>
-        /// 新增
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        void Add<T>(params T[] entities) where T : ISimpleEntity<T>;
-
-        /// <summary>
-        /// 新增
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entity"></param>
-        /// <param name="id"></param>
-        void Add<T>(T entity, object id = null) where T : ISimpleEntity;
-
-        /// <summary>
-        /// 修改
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        void Update<T>(params T[] entities) where T : ISimpleEntity;
-
-        /// <summary>
-        /// 新增或修改
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        void SaveOrUpdate<T>(params T[] entities) where T : ISimpleEntity;
-
-        /// <summary>
-        /// 删除
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        void Delete<T>(params T[] entities) where T : ISimpleEntity;
-
-        /// <summary>
-        /// 删除全部
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        void Truncate<T>() where T : ISimpleEntity;
-
-        /// <summary>
-        /// 提交数据
-        /// </summary>
-        void Flush();
-
-        /// <summary>
-        /// 用于某些追求性能的查询场景
-        /// </summary>
-        void QueryOnly(bool queryOnly);
+        public static Expression<Func<T, bool>> CreatePredicate<T>(object propValue, string propName)
+        {
+            var paramExpression = Expression.Parameter(typeof(T));
+            //x => x.{propName}
+            var propExpression = CreatePropertyExpression(paramExpression, propName);
+            
+            var propValueExpression = Expression.Constant(propValue);
+            var express = Expression.Equal(propExpression, propValueExpression);
+            //var andExp = Expression.AndAlso(e1, e2);
+            var lambda = Expression.Lambda<Func<T, bool>>(express, paramExpression);
+            return lambda;
+        }
+        
+        private static MemberExpression CreatePropertyExpression(ParameterExpression paramExpression, string propName)
+        {
+            //x => x.{propName}
+            var memberExpression = Expression.Property(paramExpression, propName);
+            return memberExpression;
+        }
     }
 
     #region memory impl
@@ -154,120 +77,85 @@ namespace Common.Data
             DicValues = new ConcurrentDictionary<Type, IList<object>>();
         }
 
-        public IQueryable<T> Query<T>() where T : ISimpleEntity
+        public IEnumerable<T> Query<T>() where T : class
         {
             return Items<T>().AsQueryable();
         }
 
-        public T Get<T>(object id) where T : ISimpleEntity
+        public T Get<T>(Expression<Func<T, bool>> predicate) where T : class
         {
-            return Query<T>().SingleOrDefault(x => x.Id.Equals(id));
+            var theOne = Query<T>().SingleOrDefault(predicate.Compile());
+            return theOne;
         }
-
-        public void Add<T>(params T[] entities) where T : ISimpleEntity<T>
+        
+        public void Add<T>(params T[] entities) where T : class
         {
+            var GetPropValue = GetIdValueFunc<T>();
+            var models = GetSaveModels<T>();
+
             foreach (var entity in entities)
             {
-                var models = GetSaveModels<T>();
+                var theId = GetPropValue(entity);
+                var theOne = models.SingleOrDefault(x => theId.Equals(GetPropValue(x)));
+                if (theOne != null)
+                {
+                    throw new InvalidOperationException("数据已经存在：" + theId);
+                }
                 models.Add(entity);
             }
         }
-
-        public void Add<T>(T entity, object id = null) where T : ISimpleEntity
+        
+        public void Update<T>(params T[] entities) where T : class
         {
-            if (entity == null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-            if (id != null)
-            {
-                entity.Id = id;
-            }
-
-            var models = GetSaveModels<T>();
-            var theOne = Get<T>(entity.Id);
-            if (theOne != null)
-            {
-                throw new InvalidOperationException("数据已经存在：" + entity.Id);
-            }
-            models.Add(entity);
-        }
-
-        public void Update<T>(params T[] entities) where T : ISimpleEntity
-        {
+            var GetPropValue = GetIdValueFunc<T>();
             var models = GetSaveModels<T>();
             foreach (var entity in entities)
             {
-                var theOne = Get<T>(entity.Id);
-                if (theOne == null)
+                if (!models.Contains(entity))
                 {
-                    throw new InvalidOperationException("未找到项" + entity.Id);
-                }
-
-                if (ReferenceEquals(entity, theOne))
-                {
-                    return;
-                }
-
-                var indexOf = models.IndexOf(theOne);
-                models.Remove(theOne);
-                models.Insert(indexOf, entity);
-            }
-        }
-
-        public void SaveOrUpdate<T>(params T[] entities) where T : ISimpleEntity
-        {
-            var models = GetSaveModels<T>();
-            foreach (var entity in entities)
-            {
-                var theOne = Get<T>(entity.Id);
-                if (theOne != null)
-                {
-                    if (ReferenceEquals(entity, theOne))
+                    var theId = GetPropValue(entity);
+                    var theOne = models.SingleOrDefault(x => theId.Equals(GetPropValue(x)));
+                    if (theOne == null)
                     {
-                        return;
+                        throw new InvalidOperationException("未找到项" + entity);
                     }
                     var indexOf = models.IndexOf(theOne);
                     models.Remove(theOne);
                     models.Insert(indexOf, entity);
                 }
-                else
-                {
-                    models.Add(entity);
-                }
             }
         }
 
-        public void Delete<T>(params T[] entities) where T : ISimpleEntity
+        public void Delete<T>(params T[] entities) where T : class
         {
+            var GetPropValue = GetIdValueFunc<T>();
             var models = GetSaveModels<T>();
             foreach (var entity in entities)
             {
-                var theOne = Get<T>(entity.Id);
-                if (theOne != null)
+                if (models.Contains(entity))
                 {
-                    models.Remove(theOne);
+                    models.Remove(entity);
+                }
+                else
+                {
+                    var theId = GetPropValue(entity);
+                    var theOne = models.SingleOrDefault(x => theId.Equals(GetPropValue(x)));
+                    if (theOne != null)
+                    {
+                        models.Remove(theOne);
+                    }
                 }
             }
         }
-
-        public void Truncate<T>() where T : ISimpleEntity
+        
+        public void Truncate<T>() where T : class
         {
             var models = GetSaveModels<T>();
             var keepModels = models.Where(x => !(x is T)).ToList();
             var baseType = GetBaseType<T>();
             DicValues[baseType] = keepModels;
         }
-
-        public void Flush()
-        {
-        }
-
-        public void QueryOnly(bool queryOnly)
-        {
-        }
-
-
+        
         protected IList<T> Items<T>()
         {
             var type = typeof(T);
@@ -321,6 +209,34 @@ namespace Common.Data
                 models.Add(item);
             }
             return this;
+        }
+
+        public Func<object, object> GetIdValueFunc<T>()
+        {
+            //todo cache and validate
+            Func<object, object> selector = arg => {return GetThePropValue(arg, "Id"); };
+            return selector;
+        }
+
+        private static object GetThePropValue(object model, string propName = "Id")
+        {
+            //x => x.{propName}
+            var paramExpression = Expression.Parameter(model.GetType());
+            var memberExpression = CreatePropertyExpression(paramExpression, propName);
+            var propertyInfo = memberExpression.Member as PropertyInfo;
+            if (propertyInfo == null)
+            {
+                return null;
+            }
+            var o = propertyInfo.GetValue(model, null);
+            return o;
+        }
+
+        private static MemberExpression CreatePropertyExpression(ParameterExpression paramExpression, string propName)
+        {
+            //x => x.{propName}
+            var memberExpression = Expression.Property(paramExpression, propName);
+            return memberExpression;
         }
     }
 

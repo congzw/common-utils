@@ -84,13 +84,13 @@ namespace Common.Data
             memoryRepository.Query<MockUser>().Count().ShouldEqual(count - 1);
         }
 
-        [TestMethod]
-        public void Truncate_Exist_ShouldOk()
-        {
-            var memoryRepository = CreateRepository(true);
-            memoryRepository.Truncate<MockUser>();
-            memoryRepository.Query<MockUser>().Count().ShouldEqual(0);
-        }
+        //[TestMethod]
+        //public void Truncate_Exist_ShouldOk()
+        //{
+        //    var memoryRepository = CreateRepository(true);
+        //    memoryRepository.Truncate<MockUser>();
+        //    memoryRepository.Query<MockUser>().Count().ShouldEqual(0);
+        //}
         
         [TestMethod]
         public void Query_TypeRelations_ShouldOk()
@@ -141,12 +141,9 @@ namespace Common.Data
 
         #region mocks
         
-        public abstract class EntityBaseInt<T> : SimpleEntityBase<int> where T : EntityBaseInt<T>
+        public abstract class EntityBaseInt 
         {
-        }
-
-        public abstract class EntityBaseInt : EntityBaseInt<EntityBaseInt>
-        {
+            public int Id { get; set; }
         }
 
 
