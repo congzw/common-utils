@@ -84,14 +84,21 @@ namespace Common.Data
             memoryRepository.Query<MockUser>().Count().ShouldEqual(count - 1);
         }
 
-        //[TestMethod]
-        //public void Truncate_Exist_ShouldOk()
-        //{
-        //    var memoryRepository = CreateRepository(true);
-        //    memoryRepository.Truncate<MockUser>();
-        //    memoryRepository.Query<MockUser>().Count().ShouldEqual(0);
-        //}
+        [TestMethod]
+        public void Truncate_Exist_ShouldOk()
+        {
+            var memoryRepository = CreateRepository(true);
+            memoryRepository.Truncate<MockUser>();
+            memoryRepository.Query<MockUser>().Count().ShouldEqual(0);
+        }
         
+        [TestMethod]
+        public void ModelKeySelector_Exist_ShouldOk()
+        {
+            var memoryRepository = CreateRepository(true);
+            memoryRepository.Add(new Foo() { FooId = "001" });
+            memoryRepository.Get<Foo>("001").ShouldNotNull();
+        }
         [TestMethod]
         public void Query_TypeRelations_ShouldOk()
         {
@@ -117,6 +124,10 @@ namespace Common.Data
             map.Register(typeof(MockKid), typeof(MockBoy));
             map.Register(typeof(MockKid), typeof(MockGirl));
             memoryRepository.Relations = map;
+
+            var modelKeySelectorMap = new ModelKeySelectorMap();
+            modelKeySelectorMap.Register(typeof(Foo),  foo => ((Foo)foo).FooId);
+            memoryRepository.Selectors = modelKeySelectorMap;
 
             if (init)
             {
@@ -169,7 +180,11 @@ namespace Common.Data
 
         }
 
+        public class Foo
+        {
+            public string FooId { get; set; }
+        }
+
         #endregion
     }
-
 }

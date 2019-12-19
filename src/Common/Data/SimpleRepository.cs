@@ -19,55 +19,7 @@ namespace Common.Data
         void Add<T>(params T[] entities) where T : class;
         void Update<T>(params T[] entities) where T : class;
         void Delete<T>(params T[] entities) where T : class;
-    }
-    
-    public static class SimpleReposExtensions
-    {
-        //public static object TryGetIdValue(this object model, string propName = "Id")
-        //{
-        //    //x => x.{propName}
-        //    var paramExpression = Expression.Parameter(model.GetType());
-        //    var memberExpression = CreatePropertyExpression(paramExpression, propName);
-        //    var propertyInfo = memberExpression.Member as PropertyInfo;
-        //    if (propertyInfo == null)
-        //    {
-        //        return null;
-        //    }
-        //    var o = propertyInfo.GetValue(model, null);
-        //    return o;
-        //}
-
-        //public static T Get<T>(this ISimpleRepository simpleRepos, object id, string idName = "Id") where T : class
-        //{
-        //    var query = simpleRepos.Query<T>();
-        //    var idValueFunc = simpleRepos.GetIdValueFunc<T>();
-        //    var theOne = query.SingleOrDefault(x => idValueFunc(x).Equals(id));
-        //    return theOne;
-        //    ////Expression<Func<TSource, TResult>> selector
-        //    //var predicate = CreatePredicate<T>(id, idName);
-        //    //var theOne = simpleRepos.Get(predicate);
-        //    //return theOne;
-        //}
-     
-        public static Expression<Func<T, bool>> CreatePredicate<T>(object propValue, string propName)
-        {
-            var paramExpression = Expression.Parameter(typeof(T));
-            //x => x.{propName}
-            var propExpression = CreatePropertyExpression(paramExpression, propName);
-            
-            var propValueExpression = Expression.Constant(propValue);
-            var express = Expression.Equal(propExpression, propValueExpression);
-            //var andExp = Expression.AndAlso(e1, e2);
-            var lambda = Expression.Lambda<Func<T, bool>>(express, paramExpression);
-            return lambda;
-        }
-        
-        private static MemberExpression CreatePropertyExpression(ParameterExpression paramExpression, string propName)
-        {
-            //x => x.{propName}
-            var memberExpression = Expression.Property(paramExpression, propName);
-            return memberExpression;
-        }
+        void Truncate<T>() where T : class;
     }
 
     #region memory impl
@@ -119,7 +71,7 @@ namespace Common.Data
                 models.Add(entity);
             }
         }
-        
+
         public void Update<T>(params T[] entities) where T : class
         {
             var GetPropValue = GetIdValueFunc<T>();
@@ -162,7 +114,7 @@ namespace Common.Data
                 }
             }
         }
-        
+
         public void Truncate<T>() where T : class
         {
             var models = GetSaveModels<T>();
@@ -170,7 +122,7 @@ namespace Common.Data
             var baseType = GetBaseType<T>();
             DicValues[baseType] = keepModels;
         }
-        
+
         protected IList<T> Items<T>()
         {
             var type = typeof(T);
@@ -232,13 +184,18 @@ namespace Common.Data
             var keySelector = Selectors.GetKeySelector(theType);
             if (keySelector == null)
             {
-                keySelector = model => GetThePropValue(model, "Id");
+                keySelector = CreateDefaultSelector();
                 Selectors.Register(theType, keySelector);
             }
             return keySelector;
         }
 
-        private static object GetThePropValue(object model, string propName = "Id")
+        private static Func<object, object> CreateDefaultSelector()
+        {
+            return model => GetThePropValue(model, "Id");
+        }
+
+        private static object GetThePropValue(object model, string propName)
         {
             //x => x.{propName}
             var paramExpression = Expression.Parameter(model.GetType());
@@ -269,13 +226,10 @@ namespace Common.Data
         {
             KeySelectors = new ConcurrentDictionary<Type, Func<object, object>>();
         }
-        
-        public void Register(Type theType, params Func<object, object>[] selectors)
+
+        public void Register(Type theType, Func<object, object> selector)
         {
-            foreach (var selector in selectors)
-            {
-                KeySelectors[theType] = selector;
-            }
+            KeySelectors[theType] = selector;
         }
 
         public Func<object, object> GetKeySelector(Type theType)
