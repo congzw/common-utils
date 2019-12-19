@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Reflection;
 
-// 20191219: V 0.2.0, first release
+// 20191219: V 0.2.0, refactor
 // 20191218: V 0.1.0, first release
 // ReSharper disable CheckNamespace
 namespace Common.Data
@@ -15,6 +15,7 @@ namespace Common.Data
     {
         IEnumerable<T> Query<T>() where T : class;
         T Get<T>(Expression<Func<T, bool>> predicate) where T : class;
+        T Get<T>(object id) where T : class;
         void Add<T>(params T[] entities) where T : class;
         void Update<T>(params T[] entities) where T : class;
         void Delete<T>(params T[] entities) where T : class;
@@ -36,14 +37,18 @@ namespace Common.Data
         //    return o;
         //}
 
-        public static T Get<T>(this ISimpleRepository simpleRepos, object id, string idName = "Id") where T : class
-        {
-            //Expression<Func<TSource, TResult>> selector
-            var predicate = CreatePredicate<T>(id, idName);
-            var theOne = simpleRepos.Get(predicate);
-            return theOne;
-        }
-
+        //public static T Get<T>(this ISimpleRepository simpleRepos, object id, string idName = "Id") where T : class
+        //{
+        //    var query = simpleRepos.Query<T>();
+        //    var idValueFunc = simpleRepos.GetIdValueFunc<T>();
+        //    var theOne = query.SingleOrDefault(x => idValueFunc(x).Equals(id));
+        //    return theOne;
+        //    ////Expression<Func<TSource, TResult>> selector
+        //    //var predicate = CreatePredicate<T>(id, idName);
+        //    //var theOne = simpleRepos.Get(predicate);
+        //    //return theOne;
+        //}
+     
         public static Expression<Func<T, bool>> CreatePredicate<T>(object propValue, string propName)
         {
             var paramExpression = Expression.Parameter(typeof(T));
@@ -69,11 +74,13 @@ namespace Common.Data
 
     public class SimpleMemoryRepository : ISimpleRepository
     {
+        public ModelKeySelectorMap Selectors { get; set; }
         public BaseSubTypeRelationMap Relations { get; set; }
         public IDictionary<Type, IList<object>> DicValues { get; set; }
         public SimpleMemoryRepository()
         {
             Relations = BaseSubTypeRelationMap.Instance;
+            Selectors = ModelKeySelectorMap.Instance;
             DicValues = new ConcurrentDictionary<Type, IList<object>>();
         }
 
@@ -87,7 +94,15 @@ namespace Common.Data
             var theOne = Query<T>().SingleOrDefault(predicate.Compile());
             return theOne;
         }
-        
+
+        public T Get<T>(object id) where T : class
+        {
+            var query = Query<T>();
+            var idValueFunc = GetIdValueFunc<T>();
+            var theOne = query.SingleOrDefault(x => idValueFunc(x).Equals(id));
+            return theOne;
+        }
+
         public void Add<T>(params T[] entities) where T : class
         {
             var GetPropValue = GetIdValueFunc<T>();
@@ -213,9 +228,14 @@ namespace Common.Data
 
         public Func<object, object> GetIdValueFunc<T>()
         {
-            //todo cache and validate
-            Func<object, object> selector = arg => {return GetThePropValue(arg, "Id"); };
-            return selector;
+            var theType = GetBaseType<T>();
+            var keySelector = Selectors.GetKeySelector(theType);
+            if (keySelector == null)
+            {
+                keySelector = model => GetThePropValue(model, "Id");
+                Selectors.Register(theType, keySelector);
+            }
+            return keySelector;
         }
 
         private static object GetThePropValue(object model, string propName = "Id")
@@ -238,6 +258,32 @@ namespace Common.Data
             var memberExpression = Expression.Property(paramExpression, propName);
             return memberExpression;
         }
+    }
+
+    public class ModelKeySelectorMap
+    {
+        //for auto fix get key
+        public IDictionary<Type, Func<object, object>> KeySelectors { get; set; }
+
+        public ModelKeySelectorMap()
+        {
+            KeySelectors = new ConcurrentDictionary<Type, Func<object, object>>();
+        }
+        
+        public void Register(Type theType, params Func<object, object>[] selectors)
+        {
+            foreach (var selector in selectors)
+            {
+                KeySelectors[theType] = selector;
+            }
+        }
+
+        public Func<object, object> GetKeySelector(Type theType)
+        {
+            return KeySelectors.ContainsKey(theType) ? KeySelectors[theType] : null;
+        }
+
+        public static ModelKeySelectorMap Instance = new ModelKeySelectorMap();
     }
 
     public class BaseSubTypeRelationMap
