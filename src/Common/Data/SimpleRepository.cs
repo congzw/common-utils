@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Reflection;
 
+// 20191225: V 0.3.0, refactor
 // 20191219: V 0.2.0, refactor
 // 20191218: V 0.1.0, first release
 // ReSharper disable CheckNamespace
@@ -13,13 +14,32 @@ namespace Common.Data
 {
     public interface ISimpleRepository
     {
-        IEnumerable<T> Query<T>() where T : class;
+        IList<T> GetAll<T>() where T : class;
+        IQueryable<T> Query<T>() where T : class;
         T Get<T>(Expression<Func<T, bool>> predicate) where T : class;
         T Get<T>(object id) where T : class;
-        void Add<T>(params T[] entities) where T : class;
-        void Update<T>(params T[] entities) where T : class;
-        void Delete<T>(params T[] entities) where T : class;
+        void Add<T>(IEnumerable<T> entities) where T : class;
+        void Update<T>(IEnumerable<T> entities) where T : class;
+        void Delete<T>(IEnumerable<T> entities) where T : class;
         void Truncate<T>() where T : class;
+    }
+
+    public static class SimpleRepositoryExtensions
+    {
+        public static void Add<T>(this ISimpleRepository simpleRepository, params T[] entities) where T : class
+        {
+            simpleRepository.Add(entities);
+        }
+
+        public static void Update<T>(this ISimpleRepository simpleRepository, params T[] entities) where T : class
+        {
+            simpleRepository.Update(entities);
+        }
+
+        public static void Delete<T>(this ISimpleRepository simpleRepository, params T[] entities) where T : class
+        {
+            simpleRepository.Delete(entities);
+        }
     }
 
     #region memory impl
@@ -36,7 +56,12 @@ namespace Common.Data
             DicValues = new ConcurrentDictionary<Type, IList<object>>();
         }
 
-        public IEnumerable<T> Query<T>() where T : class
+        public IList<T> GetAll<T>() where T : class
+        {
+            return Items<T>();
+        }
+
+        public IQueryable<T> Query<T>() where T : class
         {
             return Items<T>().AsQueryable();
         }
@@ -55,7 +80,7 @@ namespace Common.Data
             return theOne;
         }
 
-        public void Add<T>(params T[] entities) where T : class
+        public void Add<T>(IEnumerable<T> entities) where T : class
         {
             var GetPropValue = GetIdValueFunc<T>();
             var models = GetSaveModels<T>();
@@ -72,7 +97,7 @@ namespace Common.Data
             }
         }
 
-        public void Update<T>(params T[] entities) where T : class
+        public void Update<T>(IEnumerable<T> entities) where T : class
         {
             var GetPropValue = GetIdValueFunc<T>();
             var models = GetSaveModels<T>();
@@ -93,7 +118,7 @@ namespace Common.Data
             }
         }
 
-        public void Delete<T>(params T[] entities) where T : class
+        public void Delete<T>(IEnumerable<T> entities) where T : class
         {
             var GetPropValue = GetIdValueFunc<T>();
             var models = GetSaveModels<T>();
@@ -114,6 +139,7 @@ namespace Common.Data
                 }
             }
         }
+
 
         public void Truncate<T>() where T : class
         {
