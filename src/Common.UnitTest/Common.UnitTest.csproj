@@ -57,6 +57,7 @@
     <Compile Include="IncludePropertiesSpec.cs" />
     <Compile Include="Data\SimpleRepositorySpec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleConstFieldSpec.cs" />
     <Compile Include="SimpleLazyFactorySpec.cs" />
     <Compile Include="SimpleLoopTaskSpec.cs" />
     <Compile Include="SimpleMapperSpec.cs" />
