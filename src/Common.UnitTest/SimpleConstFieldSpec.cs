@@ -10,15 +10,15 @@ namespace Common
         [TestMethod]
         public void ExportConstFields_Class_ShouldFind()
         {
-            var constFieldValues = SimpleConstFieldHelper.GetConstFields(typeof(MockConst));
+            var constFieldValues = SimpleConstFieldHelper.Instance.GetConstFields(typeof(MockConst));
             Show(constFieldValues);
-            constFieldValues.Count.ShouldEqual(4);
+            constFieldValues.Count.ShouldEqual(7);
         }
 
         [TestMethod]
         public void ExportConstFields_Enum_ShouldFind()
         {
-            var constFieldValues = SimpleConstFieldHelper.GetConstFields(typeof(MockEnum));
+            var constFieldValues = SimpleConstFieldHelper.Instance.GetConstFields(typeof(MockEnum));
             Show(constFieldValues);
             constFieldValues.Count.ShouldEqual(2);
         }
@@ -28,7 +28,7 @@ namespace Common
         {
             var constFieldValues = typeof(MockEnum).Assembly.ExportConstFields();
             Show(constFieldValues);
-            constFieldValues.Count.ShouldEqual(6);
+            constFieldValues.Count.ShouldEqual(7 + 2);
         }
 
         [TestMethod]
@@ -63,14 +63,17 @@ namespace Common
             [SimpleConstField(description: "PrivateFieldC")]
             private string C = "PrivateC";
 
-            [SimpleConstField(description: "PrivateStaticFieldC")]
+            [SimpleConstField(description: "PrivateStaticFieldD")]
             private static string D = "PrivateStaticD";
-            
+
+            [SimpleConstField(description: "PublicStaticFieldE")]
+            private static string E = "PrivateStaticE";
+
             [SimpleConstField(description: "PublicPropertyX")]
             public string X { get; set; } = "XXX";
 
             [SimpleConstField(description: "PublicPropertyY", Name = "Name_Y")]
-            public string Y{ get; set; } = "YYY";
+            public string Y { get; set; } = "YYY";
         }
 
         public enum MockEnum

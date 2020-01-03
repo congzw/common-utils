@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
 // ReSharper disable CheckNamespace
 
 // 20200103 first release 1.0.0
@@ -15,11 +14,6 @@ namespace Common
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class SimpleConstFieldAttribute : Attribute
     {
-        public SimpleConstFieldAttribute()
-        {
-
-        }
-
         public SimpleConstFieldAttribute(string description)
         {
             Description = description;
@@ -36,6 +30,8 @@ namespace Common
         public string FieldName { get; set; }
         public string FieldValue { get; set; }
         public string Description { get; set; }
+
+        internal Type FromType { get; set; }
     }
 
     #endregion
@@ -43,57 +39,38 @@ namespace Common
     public class SimpleConstFieldHelper
     {
         /// <summary>
-        /// 反射查找并导出程序集里的注册信息
+        /// 导出信息
         /// </summary>
-        /// <param name="assembly"></param>
+        /// <param name="constFieldValues"></param>
         /// <param name="formatter"></param>
         /// <returns></returns>
-        public static string ExportConstFieldContents(Assembly assembly, Func<Type, SimpleConstFieldValue, string> formatter)
+        public string ExportConstFieldContents(IList<SimpleConstFieldValue> constFieldValues, Func<Type, SimpleConstFieldValue, string> formatter)
         {
             if (formatter == null)
             {
-                formatter = (t, x) => string.Format("{0}.{1} = \"{2}\"; //{3}", t?.FullName?.Replace("+", "."),
-                    x.FieldName, x.FieldValue, x.Description);
+                formatter = (t, x) => string.Format("{0}.{1} = \"{2}\"; //{3}",
+                    t?.FullName?.Replace("+", "."),
+                    x.FieldName,
+                    x.FieldValue,
+                    x.Description);
             }
 
             var sb = new StringBuilder();
-            var types = assembly.GetTypes();
-            foreach (var type in types)
+            foreach (var constFieldValue in constFieldValues)
             {
-                var theFieldValues = GetConstFields(type);
-                foreach (var theFieldValue in theFieldValues)
-                {
-                    var s = formatter(type, theFieldValue);
-                    sb.AppendFormat("{0}\r\n", s);
-                }
+                var s = formatter(constFieldValue.FromType, constFieldValue);
+                sb.AppendFormat("{0}{1}", s, Environment.NewLine);
             }
 
             return sb.ToString();
         }
 
         /// <summary>
-        /// 反射查找并导出程序集里的注册信息
-        /// </summary>
-        /// <param name="assembly"></param>
-        /// <returns></returns>
-        public static IList<SimpleConstFieldValue> ExportConstFields(Assembly assembly)
-        {
-            var nbConstFieldValues = new List<SimpleConstFieldValue>();
-            var types = assembly.GetTypes();
-            foreach (var type in types)
-            {
-                var theFieldValues = GetConstFields(type);
-                nbConstFieldValues.AddRange(theFieldValues);
-            }
-            return nbConstFieldValues;
-        }
-
-        /// <summary>
-        /// 获取某个类型声明的所有的MyConstFieldAttribute字段的信息
+        /// 获取某个类型声明的信息
         /// </summary>
         /// <param name="classType"></param>
         /// <returns></returns>
-        public static IList<SimpleConstFieldValue> GetConstFields(Type classType)
+        public IList<SimpleConstFieldValue> GetConstFields(Type classType)
         {
             var list = new List<SimpleConstFieldValue>();
 
@@ -120,16 +97,29 @@ namespace Common
             }
             else
             {
-                var fieldInfos = classType.GetProperties();
-                foreach (var fieldInfo in fieldInfos)
+                var memberInfos = classType.GetMembers(BindingFlags.Static
+                                                        | BindingFlags.Instance
+                                                        | BindingFlags.GetField
+                                                        | BindingFlags.GetProperty
+                                                        | BindingFlags.Public
+                                                        | BindingFlags.NonPublic);
+
+                foreach (var memberInfo in memberInfos)
                 {
-                    var customAttributes = fieldInfo.GetCustomAttributes(typeof(SimpleConstFieldAttribute), false);
+                    var customAttributes = memberInfo.GetCustomAttributes(typeof(SimpleConstFieldAttribute), false);
                     if (customAttributes.Length > 0)
                     {
                         var att = (SimpleConstFieldAttribute)customAttributes[0];
-                        var fieldValue = SimpleConstFieldValue(classType, att, fieldInfo);
-
-                        list.Add(fieldValue);
+                        if (memberInfo is FieldInfo fieldInfo)
+                        {
+                            var fieldValue = SimpleConstFieldValue(classType, att, fieldInfo);
+                            list.Add(fieldValue);
+                        }
+                        else if (memberInfo is PropertyInfo propInfo)
+                        {
+                            var fieldValue = SimpleConstFieldValue(classType, att, propInfo);
+                            list.Add(fieldValue);
+                        }
                     }
                 }
             }
@@ -137,76 +127,95 @@ namespace Common
             return list;
         }
 
-        private static SimpleConstFieldValue SimpleConstFieldValue(Type classType, SimpleConstFieldAttribute att, PropertyInfo fieldInfo)
+        public bool ContainsConstFiled(Type theType, string value)
         {
-            var fieldValue = new SimpleConstFieldValue { Description = att.Description };
-
-            fieldValue.FieldName = !string.IsNullOrEmpty(att.Name)
-                ? att.Name
-                : fieldInfo.Name;
-
-            if (fieldInfo.IsStatic())
-            {
-                fieldValue.FieldValue = fieldInfo.GetValue(null).ToString();
-            }
-            else
-            {
-                var instance = Activator.CreateInstance(classType);
-                fieldValue.FieldValue = fieldInfo.GetValue(instance).ToString();
-            }
-
-            return fieldValue;
-        }
-
-        /// <summary>
-        /// 获取某个类型声明的所有的Const字段的信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public static IList<SimpleConstFieldValue> GetConstFields<T>()
-        {
-            var classType = typeof(T);
-            return GetConstFields(classType);
-        }
-
-        public static bool ContainsConstFiled<T>(string value)
-        {
-            var userTypeCodes = GetConstFields<T>()
+            var userTypeCodes = GetConstFields(theType)
                 .Select(x => x.FieldValue).ToList();
             bool contains = userTypeCodes.Contains(value, StringComparer.OrdinalIgnoreCase);
             return contains;
         }
 
-        private static T GetAttributeOfType<T>(int enumVal, Type enumType) where T : Attribute
+        private static SimpleConstFieldValue SimpleConstFieldValue(Type classType, SimpleConstFieldAttribute att, PropertyInfo propInfo)
         {
-            var memInfo = enumType.GetMember(enumVal.ToString());
-            var attributes = memInfo[0].GetCustomAttributes(typeof(T), false);
-            return (attributes.Length > 0) ? (T)attributes[0] : null;
+            var fieldValue = new SimpleConstFieldValue { Description = att.Description, FromType = classType };
+
+            fieldValue.FieldName = !string.IsNullOrEmpty(att.Name)
+                ? att.Name
+                : propInfo.Name;
+
+            if (propInfo.IsStatic())
+            {
+                fieldValue.FieldValue = propInfo.GetValue(null).ToString();
+            }
+            else
+            {
+                var instance = Activator.CreateInstance(classType);
+                fieldValue.FieldValue = propInfo.GetValue(instance).ToString();
+            }
+
+            return fieldValue;
         }
+        private static SimpleConstFieldValue SimpleConstFieldValue(Type classType, SimpleConstFieldAttribute att, FieldInfo propInfo)
+        {
+            var fieldValue = new SimpleConstFieldValue { Description = att.Description, FromType = classType };
+
+            fieldValue.FieldName = !string.IsNullOrEmpty(att.Name)
+                ? att.Name
+                : propInfo.Name;
+
+            if (propInfo.IsStatic)
+            {
+                fieldValue.FieldValue = propInfo.GetValue(null).ToString();
+            }
+            else
+            {
+                var instance = Activator.CreateInstance(classType);
+                fieldValue.FieldValue = propInfo.GetValue(instance).ToString();
+            }
+
+            return fieldValue;
+        }
+
+        public static SimpleConstFieldHelper Instance = new SimpleConstFieldHelper();
     }
 
     public static class AssemblyExtensionsConstField
     {
-        /// <summary>
-        ///  反射查找并导出程序集里的[MyConstFieldAttribute]注册信息的文本内容
-        /// </summary>
-        /// <param name="assembly"></param>
-        /// <param name="formatter"></param>
-        /// <returns></returns>
         public static string ExportConstFieldContents(this Assembly assembly, Func<Type, SimpleConstFieldValue, string> formatter = null)
         {
-            return SimpleConstFieldHelper.ExportConstFieldContents(assembly, formatter);
+            var exportConstFields = assembly.ExportConstFields();
+            return SimpleConstFieldHelper.Instance.ExportConstFieldContents(exportConstFields, formatter);
+        }
+
+        public static IList<SimpleConstFieldValue> ExportConstFields(this Assembly assembly)
+        {
+            var nbConstFieldValues = new List<SimpleConstFieldValue>();
+            var types = assembly.GetTypes();
+            foreach (var type in types)
+            {
+                var theFieldValues = SimpleConstFieldHelper.Instance.GetConstFields(type);
+                nbConstFieldValues.AddRange(theFieldValues);
+            }
+
+            return nbConstFieldValues;
         }
 
         /// <summary>
-        /// 反射查找并导出程序集里的[MyConstFieldAttribute]注册信息
+        /// 获取某个类型声明的所有的信息
         /// </summary>
-        /// <param name="assembly"></param>
+        /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static IList<SimpleConstFieldValue> ExportConstFields(this Assembly assembly)
+        public static IList<SimpleConstFieldValue> GetConstFields<T>(this SimpleConstFieldHelper helper)
         {
-            return SimpleConstFieldHelper.ExportConstFields(assembly);
+            var classType = typeof(T);
+            return helper.GetConstFields(classType);
         }
+
+        public static bool ContainsConstFiled<T>(this SimpleConstFieldHelper helper, string value)
+        {
+            return helper.ContainsConstFiled(typeof(T), value);
+        }
+
     }
 
     public static class PropertyInfoExtensions
