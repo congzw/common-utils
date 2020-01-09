@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -50,7 +49,7 @@ namespace Common
             return 0.AsTask();
         }
     }
-    
+
     public static class SimpleLogExtensions
     {
         public static bool ShouldLog(this SimpleLogLevel currentLevel, SimpleLogLevel enabledLevel)
@@ -118,7 +117,7 @@ namespace Common
             }
             return theOne;
         }
-        
+
         #region for di extensions
 
         private static readonly Lazy<ISimpleLogFactory> LazyInstance = new Lazy<ISimpleLogFactory>(() => new SimpleLogFactory(new SimpleLogSettings(), new LogMessageActions()));
@@ -215,7 +214,7 @@ namespace Common
         public string Category { get; set; }
         public SimpleLogLevel EnabledLevel { get; set; }
     }
-    
+
     public static class SimpleLogFactoryExtensions
     {
         public static ISimpleLog CreateLogFor(this ISimpleLogFactory factory, Type type)
@@ -240,7 +239,7 @@ namespace Common
             }
             return factory.CreateLogFor(instance.GetType());
         }
-        
+
         public static ISimpleLog GetOrCreateLogFor(this ISimpleLogFactory factory, Type type)
         {
             return factory.GetOrCreate(type.FullName);
@@ -283,7 +282,7 @@ namespace Common
             }
             Trace.WriteLine(string.Format("{0} [{1}][{2}]{3} {4}", args.Category, "SimpleLog", args.Level.ToString(), _prefix, args.Message));
         }
-        
+
         public LogMessageActions()
         {
             var defaultCategory = SimpleLogSettings.DefaultCategory;
@@ -340,9 +339,10 @@ namespace Common
             return new LogMessageArgs(category, message, level);
         }
     }
-    
-    #region demos
 
+    #region demo for async notify
+
+    ////how to use: => DemoForAsyncNotifyConfig.Setup();
     //public class DemoForAsyncNotifyConfig
     //{
     //    public static void Setup()
@@ -357,6 +357,60 @@ namespace Common
     //}
 
     #endregion
-    
+
+    #region demo for init log for net core logging
+
+
+    ////how to use: => LogToNetCoreLoggingConfig.Setup();
+    //public class LogToNetCoreLoggingConfig
+    //{
+    //    private static bool init = false;
+    //    public static void Setup()
+    //    {
+    //        if (init)
+    //        {
+    //            return;
+    //        }
+    //        var simpleLogFactory = SimpleLogFactory.Resolve();
+    //        var logMessageActions = simpleLogFactory.LogActions;
+    //        ////禁用默认的Debug
+    //        //logMessageActions["Default"].Enabled = false;
+
+    //        //适配到 => NetCoreLogging
+    //        logMessageActions.SetActions("NetCoreLogging", true, LogToNetCoreLogging);
+    //        init = true;
+    //    }
+    //    private static void LogToNetCoreLogging(LogMessageArgs args)
+    //    {
+    //        if (args == null)
+    //        {
+    //            return;
+    //        }
+
+    //        var loggerFactory = MyLogConfig.Instance.Factory;
+    //        var logger = loggerFactory.CreateLogger(args.Category);
+    //        logger.Log((LogLevel)args.Level, args.Message?.ToString());
+    //    }
+    //}
+
     #endregion
+    #endregion
+
+    //utils code only use LogHelper
+    public static class LogHelper
+    {
+        public static ISimpleLog GetLogger(string category = null)
+        {
+            var simpleLogFactory = SimpleLogFactory.Resolve();
+            var logger = simpleLogFactory.GetOrCreate(category);
+            return logger;
+        }
+
+        public static Task Log(object message)
+        {
+            var simpleLogFactory = SimpleLogFactory.Resolve();
+            var logger = simpleLogFactory.GetOrCreate(null);
+            return logger.Log(message, SimpleLogLevel.Trace);
+        }
+    }
 }
