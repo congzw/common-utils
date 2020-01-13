@@ -52,6 +52,44 @@ namespace Common
 
     public static class SimpleLogExtensions
     {
+        public static SimpleLogLevel AsSimpleLogLevel(this int level)
+        {
+            //Trace = 0,
+            //Debug = 1,
+            //Information = 2,
+            //Warning = 3,
+            //Error = 4,
+            //Critical = 5,
+            //None = 6
+
+            if (level <= 0)
+            {
+                return SimpleLogLevel.Trace;
+            }
+            if (level <= 1)
+            {
+                return SimpleLogLevel.Debug;
+            }
+            if (level <= 2)
+            {
+                return SimpleLogLevel.Information;
+            }
+            if (level <= 3)
+            {
+                return SimpleLogLevel.Warning;
+            }
+            if (level <= 4)
+            {
+                return SimpleLogLevel.Error;
+            }
+            //if (level <= 5)
+            //{
+            //    return SimpleLogLevel.Critical;
+            //}
+            //return SimpleLogLevel.None;
+            return SimpleLogLevel.Critical;
+        }
+
         public static bool ShouldLog(this SimpleLogLevel currentLevel, SimpleLogLevel enabledLevel)
         {
             return currentLevel >= enabledLevel && currentLevel != SimpleLogLevel.None;
@@ -396,21 +434,28 @@ namespace Common
     #endregion
     #endregion
 
-    //utils code only use LogHelper
-    public static class LogHelper
+    //how to use: => SimpleLogHelper.InitSimpleLog();
+    public class SimpleLogHelper : ILogHelper
     {
-        public static ISimpleLog GetLogger(string category = null)
+        public void Log(string message, int level)
         {
-            var simpleLogFactory = SimpleLogFactory.Resolve();
-            var logger = simpleLogFactory.GetOrCreate(category);
+            var simpleLog = GetLogger(null);
+            simpleLog.Log(message, level.AsSimpleLogLevel());
+        }
+        private ISimpleLog GetLogger(string category = null)
+        {
+            var logger = SimpleLogFactory.Resolve().GetOrCreate(category);
             return logger;
         }
 
-        public static Task Log(object message)
+        #region extensions for SimpleLog
+
+        private static readonly ILogHelper _default = new SimpleLogHelper();
+        public static void InitSimpleLog()
         {
-            var simpleLogFactory = SimpleLogFactory.Resolve();
-            var logger = simpleLogFactory.GetOrCreate(null);
-            return logger.Log(message, SimpleLogLevel.Trace);
+            LogHelper.Resolve = () => _default;
         }
+
+        #endregion
     }
 }
