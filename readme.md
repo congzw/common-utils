@@ -9,7 +9,8 @@
 
 ## change list
 
-- 20191218:add ISimpleRepository and memory impl 0.1.0, first release
+- 20200117 add IpHelper and Spec
+- 20191218 add ISimpleRepository and memory impl 0.1.0, first release
 - 20191213 add IHaveBags json support 2.1.0
 - 20191212 add SimpleServiceLocator and Spec
 - 20191211 add TypeRelations and Spec
