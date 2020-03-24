@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Common
 {
-    public class HashHelper
+    public class MyHashHelper
     {
         public string ComputeHash(string input, HashAlgorithm hashProvider, bool lowerCase)
         {
@@ -29,12 +29,12 @@ namespace Common
             return hash;
         }
 
-        public static HashHelper Instance = new HashHelper();
+        public static MyHashHelper Instance = new MyHashHelper();
     }
 
     public static class CryptographyExtensions
     {
-        public static string GetGitHash(this string input)
+        public static string GetHashAsGitBlob(this string input)
         {
             //ref => http://alblue.bandlem.com/2011/08/git-tip-of-week-objects.html
 
@@ -98,9 +98,9 @@ namespace Common
             return ComputeHash(input, new SHA512Managed());
         }
 
-        public static string ComputeHash(string input, HashAlgorithm hashProvider, bool lowerCase = true)
+        private static string ComputeHash(string input, HashAlgorithm hashProvider, bool lowerCase = true)
         {
-            return HashHelper.Instance.ComputeHash(input, hashProvider, lowerCase);
+            return MyHashHelper.Instance.ComputeHash(input, hashProvider, lowerCase);
         }
     }
 }
