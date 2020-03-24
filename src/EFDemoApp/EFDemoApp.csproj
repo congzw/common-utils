@@ -14,4 +14,8 @@
     <ProjectReference Include="..\Common.Uow\Common.Uow.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Tests\Domain\" />
+  </ItemGroup>
+
 </Project>
