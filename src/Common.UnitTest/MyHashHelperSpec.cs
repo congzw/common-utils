@@ -1,4 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Common
 {
@@ -20,6 +23,81 @@ namespace Common
             "".GetHashSha256().Log();
             "".GetHashSha384().Log();
             "".GetHashSha512().Log();
+        }
+
+        [TestMethod]
+        public void GuidHashMap_TryFindByHash_ShouldOk()
+        {
+            var guidHashMap = new GuidHashMap();
+            var now = new DateTime(2000, 1, 1);
+            for (int i = 0; i < 10; i++)
+            {
+                guidHashMap.Add(Guid.NewGuid(), now.AddSeconds(1));
+            }
+
+            var hashKeys = guidHashMap.Items.Keys.ToList();
+            foreach (var hashKey in hashKeys)
+            {
+                var display = guidHashMap.TryFindByHash(hashKey).Hash;
+                display.Log();
+            }
+        }
+
+        [TestMethod]
+        public void GuidHashMap_TryFindByShortHash_ShouldOk()
+        {
+            var guidHashMap = new GuidHashMap();
+            var now = new DateTime(2000, 1, 1);
+            for (int i = 0; i < 10; i++)
+            {
+                guidHashMap.Add(Guid.NewGuid(), now.AddSeconds(1));
+            }
+
+            var hashKeys = guidHashMap.Items.Keys.ToList();
+            foreach (var hashKey in hashKeys)
+            {
+                var shortKey = hashKey.Substring(0, 4);
+                var display = shortKey + " : " + guidHashMap.TryFindByShortHash(shortKey).Hash;
+                display.Log();
+            }
+        }
+
+        [TestMethod]
+        public void GuidHashMap_TryFindAllByShortHash_ShouldOk()
+        {
+            var guidHashMap = new GuidHashMap();
+            var now = new DateTime(2000, 1, 1);
+            for (int i = 0; i < 1000; i++)
+            {
+                guidHashMap.Add(Guid.NewGuid(), now.AddSeconds(1));
+            }
+
+            var hashKeys = guidHashMap.Items.Keys.ToList();
+            var countGroup = new Dictionary<int, int>();
+
+            foreach (var hashKey in hashKeys)
+            {
+                var shortKey = hashKey.Substring(0, 4);
+                var length = guidHashMap.TryFindAllByShortHash(shortKey).Length;
+                if (length > 1)
+                {
+                    //var display = shortKey + " Find Count: " + length;
+                    //display.Log();
+                    if (!countGroup.ContainsKey(length))
+                    {
+                        countGroup[length] = 1;
+                    }
+                    else
+                    {
+                        countGroup[length] = countGroup[length] + 1;
+                    }
+                }
+            }
+
+            foreach (var i in countGroup)
+            {
+                string.Format("find {0} total: {1}", i.Key, i.Value).Log();
+            }
         }
     }
 }

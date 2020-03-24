@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -52,7 +54,7 @@ namespace Common
             var computedContent = string.Format("blob {0}\0{1}", input.Length, input);
             return computedContent.GetHashSha1();
         }
-        
+
         /// <summary>
         /// 	Calculates the MD5 hash for the given string.
         /// </summary>
@@ -103,4 +105,79 @@ namespace Common
             return MyHashHelper.Instance.ComputeHash(input, hashProvider, lowerCase);
         }
     }
+
+
+    #region GuidHashMap
+
+    public class GuidHashMap
+    {
+        public GuidHashMap()
+        {
+            Items = new ConcurrentDictionary<string, GuidHash>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public IDictionary<string, GuidHash> Items { get; set; }
+
+        public GuidHash TryFindByShortHash(string shortHash)
+        {
+            var theOne = Items.Values.OrderBy(x => x.CreateAt).FirstOrDefault(x => x.Hash.StartsWith(shortHash, StringComparison.OrdinalIgnoreCase));
+            return theOne;
+        }
+
+        public GuidHash[] TryFindAllByShortHash(string shortHash)
+        {
+            var all = Items.Values.OrderBy(x => x.CreateAt).Where(x => x.Hash.StartsWith(shortHash, StringComparison.OrdinalIgnoreCase)).ToArray();
+            return all;
+        }
+
+        public GuidHash TryFindByHash(string hash)
+        {
+            var theOne = Items.Values.FirstOrDefault(x => x.Hash.Equals(hash, StringComparison.OrdinalIgnoreCase));
+            return theOne;
+        }
+
+        public GuidHashMap Add(Guid id, DateTime? createAt = null)
+        {
+            var guidHash = GuidHash.CreateGuidHash(id, createAt);
+            Items.Add(guidHash.Hash, guidHash);
+            return this;
+        }
+
+        public static GuidHashMap Instance = new GuidHashMap();
+    }
+
+    public class GuidHash
+    {
+        public GuidHash()
+        {
+            CreateAt = DateTime.Now;
+        }
+        public Guid Id { get; set; }
+        public string Hash { get; set; }
+        public DateTime CreateAt { get; set; }
+
+        public static GuidHash CreateGuidHash(Guid id, DateTime? createAt = null)
+        {
+            //N   32 digits:
+            //00000000000000000000000000000000
+            //D   32 digits separated by hyphens:
+            //00000000 - 0000 - 0000 - 0000 - 000000000000
+            //B   32 digits separated by hyphens, enclosed in braces:
+            //{ 00000000 - 0000 - 0000 - 0000 - 000000000000}
+            //P   32 digits separated by hyphens, enclosed in parentheses:
+            //(00000000 - 0000 - 0000 - 0000 - 000000000000)
+            //X Four hexadecimal values enclosed in braces, where the fourth value is a subset of eight hexadecimal values that is also enclosed in braces:
+            //{ 0x00000000,0x0000,0x0000,{ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00} }
+            var guidHash = new GuidHash();
+            guidHash.Id = id;
+            guidHash.Hash = id.ToString("N").GetHashSha1();
+            if (createAt != null)
+            {
+                guidHash.CreateAt = createAt.Value;
+            }
+            return guidHash;
+        }
+    }
+
+    #endregion
 }
