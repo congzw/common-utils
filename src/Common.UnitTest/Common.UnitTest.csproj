@@ -54,6 +54,7 @@
     <Compile Include="DateTimeRangeSpec.cs" />
     <Compile Include="DelayedGroupCacheSpec.cs" />
     <Compile Include="FlagCheckSpec.cs" />
+    <Compile Include="HashHelperSpec.cs" />
     <Compile Include="HaveBagsSpec.cs" />
     <Compile Include="IncludePropertiesSpec.cs" />
     <Compile Include="Data\SimpleRepositorySpec.cs" />
