@@ -9,6 +9,7 @@
 
 ## change list
 
+- 20200409 add MyJsonHelper and Spec
 - 20200117 add NetCheckHelper and Spec
 - 20200117 add IpHelper and Spec
 - 20191218 add ISimpleRepository and memory impl 0.1.0, first release
