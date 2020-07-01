@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace Common.Scopes
 {
-    public class MockRepository : IScopeContextRepository
+    public class MockScopeService : IScopeService
     {
         public IDictionary<string, ScopeContext> Contexts { get; set; } = new ConcurrentDictionary<string, ScopeContext>(StringComparer.OrdinalIgnoreCase);
-        public MockRepository(bool seed)
+        public MockScopeService(bool seed)
         {
             if (seed)
             {

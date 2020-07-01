@@ -24,12 +24,12 @@ namespace Common.Scopes
 
         public static ScopeContext GetScopeContext(string scopeId, bool createIfNotExist = true)
         {
-            var repos = ReposFunc();
-            return repos.GetScopeContext(scopeId, createIfNotExist);
+            var scopeService = Resolve();
+            return scopeService.GetScopeContext(scopeId, createIfNotExist);
         }
 
-        private static readonly Lazy<IScopeContextRepository> LazyRepos = new Lazy<IScopeContextRepository>(() => new ScopeContextRepository());
-        public static Func<IScopeContextRepository> ReposFunc { get; set; } = () => LazyRepos.Value;
+        private static readonly Lazy<IScopeService> LazyInstance = new Lazy<IScopeService>(() => new ScopeService());
+        public static Func<IScopeService> Resolve { get; set; } = () => LazyInstance.Value;
 
         #endregion
     }

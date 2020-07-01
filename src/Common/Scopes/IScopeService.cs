@@ -4,7 +4,15 @@ using System.Collections.Generic;
 
 namespace Common.Scopes
 {
-    public class ScopeContextRepository : IScopeContextRepository
+    public interface IScopeService
+    {
+        ScopeContext GetScopeContext(string scopeId, bool createIfNotExist);
+        void SetScopeContext(ScopeContext scopeContext);
+        void RemoveScopeContext(string scopeId);
+        void ClearAll();
+    }
+
+    public class ScopeService : IScopeService
     {
         //default use memory dictionary impl, can also be replaced by other impl like database source
         public IDictionary<string, ScopeContext> Contexts { get; set; } = new ConcurrentDictionary<string, ScopeContext>(StringComparer.OrdinalIgnoreCase);
@@ -18,7 +26,7 @@ namespace Common.Scopes
                     return null;
                 }
 
-                var scopeContext = new ScopeContext {ScopeId = scopeId};
+                var scopeContext = new ScopeContext { ScopeId = scopeId };
                 Contexts[scopeId] = scopeContext;
             }
             return Contexts[scopeId];
