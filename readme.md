@@ -9,6 +9,7 @@
 
 ## change list
 
+- 20200701 add Scopes and Spec
 - 20200409 add MyJsonHelper and Spec
 - 20200117 add NetCheckHelper and Spec
 - 20200117 add IpHelper and Spec
