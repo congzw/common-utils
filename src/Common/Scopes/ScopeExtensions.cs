@@ -2,7 +2,7 @@
 
 namespace Common.Scopes
 {
-    public static class ScopeContextExtensions
+    public static class ScopeExtensions
     {
         public static T GetItemAs<T>(this ScopeContext ctx, string key, T defaultValue = default(T))
         {

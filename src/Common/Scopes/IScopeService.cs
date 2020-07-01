@@ -14,7 +14,7 @@ namespace Common.Scopes
 
     public class ScopeService : IScopeService
     {
-        //default use memory dictionary impl, can also be replaced by other impl like database source
+        //default use memory dictionary impl, can also be replaced by other impl such as database source...
         public IDictionary<string, ScopeContext> Contexts { get; set; } = new ConcurrentDictionary<string, ScopeContext>(StringComparer.OrdinalIgnoreCase);
 
         public ScopeContext GetScopeContext(string scopeId, bool createIfNotExist)

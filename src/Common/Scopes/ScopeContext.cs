@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Common.Scopes
 {
-    public class ScopeContext : IScopeKey
+    public class ScopeContext : IScopeId
     {
         public string ScopeId { get; set; }
 
