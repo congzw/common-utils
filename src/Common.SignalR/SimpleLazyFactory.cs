@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Common.SignalR.Refs
+namespace Common
 {
     public class SimpleLazyFactory<T>
     {

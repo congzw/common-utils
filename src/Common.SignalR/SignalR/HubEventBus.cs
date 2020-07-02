@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DateHelper = Common.SignalR.Refs.DateHelper;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Common.SignalR

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Common.SignalR.Refs;
-using Common.SignalR.Refs.Http;
+using Common.Http;
 using Microsoft.AspNetCore.Http;
 
 namespace Common.SignalR.ClientMonitors.Connections

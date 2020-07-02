@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Common.SignalR.Refs;
 
 namespace Common.SignalR.ClientMonitors.Connections
 {

@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Common.SignalR.Refs;
 
 namespace Common.SignalR.ClientMonitors.ClientMethods.SmartReacts
 {

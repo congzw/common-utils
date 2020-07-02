@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Common.SignalR.Refs.DependencyInjection
+namespace Common.DependencyInjection
 {
     public static partial class ServiceCollectionExtensions
     {

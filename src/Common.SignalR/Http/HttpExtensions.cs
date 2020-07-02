@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 
-namespace Common.SignalR.Refs.Http
+namespace Common.Http
 {
     public static class HttpExtensions
     {

@@ -4,7 +4,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
-namespace Common.SignalR.Refs
+namespace Common
 {
     public class MyModelHelper
     {

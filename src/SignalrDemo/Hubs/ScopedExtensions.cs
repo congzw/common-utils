@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Common.DependencyInjection;
 using Common.SignalR.ClientMonitors;
 using Common.SignalR.ClientMonitors.ClientMethods;
 using Common.SignalR.ClientMonitors.Connections;
-using Common.SignalR.Refs.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable CheckNamespace

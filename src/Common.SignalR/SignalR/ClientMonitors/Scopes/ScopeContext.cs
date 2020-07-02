@@ -1,5 +1,5 @@
 ﻿using System;
-using Common.SignalR.Refs;
+
 // ReSharper disable CheckNamespace
 
 namespace Common.SignalR.ClientMonitors
