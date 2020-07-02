@@ -1,5 +1,18 @@
 ﻿# Signalr的状态管理组件说明
 
+## 组件概览
+
+- EventBus : 事件通知和处理的总线
+	- Hub 内部
+	- HubContext 外部
+	- HubCross 内外
+	- SignalR 基类
+
+- ClientMonitors： 客户端连接管理
+	- 
+	- 
+
+
 ## 关于IClientConnectionLocate
 
 - ConnectionId Signalr的链接Id，刷新会变化，无法直接用来跟踪和维护业务上的状态

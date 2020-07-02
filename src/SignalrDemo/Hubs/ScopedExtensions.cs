@@ -13,7 +13,7 @@ namespace Common.SignalR.Scoped
     {
         public static IServiceCollection AddClientMonitors(this IServiceCollection services)
         {
-            services.AddScoped<HubEventBus>();
+            services.AddScoped<SignalREventBus>();
             services.AddAllImpl<ISignalREventHandler>(ServiceLifetime.Scoped, typeof(SignalREventHandlerDecorator));
 
 

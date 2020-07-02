@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.SignalR;
 
+// ReSharper disable once CheckNamespace
 namespace Common.SignalR
 {
     public class HubContextWrapper

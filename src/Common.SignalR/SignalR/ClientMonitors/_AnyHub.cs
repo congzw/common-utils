@@ -11,9 +11,9 @@ namespace Common.SignalR.ClientMonitors
     //a demo for how to use ClientMonitors
     public class _AnyHub : Hub
     {
-        private readonly HubEventBus _hubEventBus;
+        private readonly SignalREventBus _hubEventBus;
 
-        public _AnyHub(HubEventBus hubEventBus)
+        public _AnyHub(SignalREventBus hubEventBus)
         {
             _hubEventBus = hubEventBus;
         }
