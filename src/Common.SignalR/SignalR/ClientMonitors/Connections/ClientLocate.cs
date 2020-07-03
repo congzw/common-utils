@@ -5,11 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Common.SignalR.ClientMonitors.Connections
 {
-    public interface IClientLocate : IScopeClientKey
-    {
-        //todo add more specific prop by need
-    }
-    public class ClientLocate : IClientLocate
+    public class ClientLocate : IScopeClientLocate
     {
         public string ScopeId { get; set; }
         public string ClientId { get; set; }
@@ -21,7 +17,7 @@ namespace Common.SignalR.ClientMonitors.Connections
     }
     public static class ClientLocateExtensions
     {
-        public static bool SameLocateKey(this IClientLocate locate, IClientLocate locate2)
+        public static bool SameLocateKey(this IScopeClientLocate locate, IScopeClientLocate locate2)
         {
             if (locate == null || locate2 == null)
             {
@@ -32,7 +28,7 @@ namespace Common.SignalR.ClientMonitors.Connections
                    && locate.ClientId.MyEquals(locate2.ClientId);
         }
 
-        public static T Locate<T>(this IEnumerable<T> locates, IClientLocate locate) where T : IClientLocate
+        public static T Locate<T>(this IEnumerable<T> locates, IScopeClientLocate locate) where T : IScopeClientLocate
         {
             if (locates == null || locate == null)
             {
@@ -62,7 +58,7 @@ namespace Common.SignalR.ClientMonitors.Connections
             return clientKey;
         }
 
-        public static T TryAutoSetScopeId<T>(this HttpContext httpContext, T scopedClientKey) where T : IScopeClientKey
+        public static T TryAutoSetScopeId<T>(this HttpContext httpContext, T scopedClientKey) where T : IScopeClientLocate
         {
             if (httpContext == null)
             {
@@ -92,7 +88,7 @@ namespace Common.SignalR.ClientMonitors.Connections
             }
             return scopedClientKey;
         }
-        public static T TryAutoSetScopeClientKey<T>(this HttpContext httpContext, T scopedClientKey) where T : IScopeClientKey
+        public static T TryAutoSetScopeClientKey<T>(this HttpContext httpContext, T scopedClientKey) where T : IScopeClientLocate
         {
             if (httpContext == null)
             {

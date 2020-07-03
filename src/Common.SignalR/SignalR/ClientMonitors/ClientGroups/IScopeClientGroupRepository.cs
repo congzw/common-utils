@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Common.SignalR.ClientMonitors.Groups
+namespace Common.SignalR.ClientMonitors.ClientGroups
 {
     public interface IScopeClientGroupRepository
     {

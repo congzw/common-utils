@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using Common.SignalR.ClientMonitors.Connections;
+﻿using System.Collections.Generic;
 
 namespace Common.SignalR.ClientMonitors.ClientMethods
 {
@@ -12,7 +9,7 @@ namespace Common.SignalR.ClientMonitors.ClientMethods
         IDictionary<string, object> Bags { get; set; }
     }
 
-    public interface IClientMethodInvoke : IClientMethod, IClientLocate
+    public interface IClientMethodInvoke : IClientMethod, IScopeClientLocate
     {
     }
 
@@ -21,7 +18,7 @@ namespace Common.SignalR.ClientMonitors.ClientMethods
         public ClientMethodInvoke()
         {
             MethodArgs = new List<object>().ToArray();
-            Bags = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            Bags = BagsHelper.Create();
         }
 
         public string ScopeId { get; set; }

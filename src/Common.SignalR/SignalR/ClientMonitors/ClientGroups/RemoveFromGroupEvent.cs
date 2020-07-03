@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Common.SignalR.ClientMonitors.Groups
+namespace Common.SignalR.ClientMonitors.ClientGroups
 {
     public class RemoveFromGroupEvent : BaseHubEvent
     {

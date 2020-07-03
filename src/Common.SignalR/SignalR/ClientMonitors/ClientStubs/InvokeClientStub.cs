@@ -4,7 +4,9 @@ using System.Collections.Generic;
 
 namespace Common.SignalR.ClientMonitors.ClientStubs
 {
-    //代表埋在客户端的一个方法桩子，供从服务器方主动调用
+    /// <summary>
+    /// 代表埋在客户端的一个方法桩子，供从服务器方主动调用
+    /// </summary>
     public interface IClientStub : IHaveBags
     {
         string Method { get; set; }

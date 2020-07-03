@@ -3,11 +3,18 @@ using System.Linq;
 
 namespace Common.SignalR.ClientMonitors.Connections
 {
-    public interface IClientConnectionLocate : IScopeClientKey
+    public class ClientConnectionLocate : IClientConnectionLocate
     {
-        //ScopeId, ClientId => ConnectionId
-        string ConnectionId { get; set; }
+        public string ScopeId { get; set; }
+        public string ClientId { get; set; }
+        public string ConnectionId { get; set; }
+
+        public static ClientConnectionLocate Create()
+        {
+            return new ClientConnectionLocate();
+        }
     }
+
     public static class ClientConnectionLocateExtensions
     {
         public static bool SameLocateKey(this IClientConnectionLocate locate, IClientConnectionLocate locate2)
@@ -40,21 +47,10 @@ namespace Common.SignalR.ClientMonitors.Connections
         {
             if (instance == null)
             {
-                return instance;
+                return default(T);
             }
             instance.ConnectionId = connectionId;
             return instance;
-        }
-    }
-    public class ClientConnectionLocate : IClientConnectionLocate
-    {
-        public string ScopeId { get; set; }
-        public string ClientId { get; set; }
-        public string ConnectionId { get; set; }
-
-        public static ClientConnectionLocate Create()
-        {
-            return new ClientConnectionLocate();
         }
     }
 }

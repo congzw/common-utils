@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using Common.SignalR.ClientMonitors.ClientGroups;
 using Common.SignalR.ClientMonitors.ClientMethods;
 using Common.SignalR.ClientMonitors.ClientStubs;
 using Common.SignalR.ClientMonitors.Connections;
-using Common.SignalR.ClientMonitors.Groups;
 using Microsoft.AspNetCore.SignalR;
 
+// ReSharper disable once CheckNamespace
 namespace Common.SignalR.ClientMonitors
 {
     //a demo for how to use ClientMonitors
+
     public class _AnyHub : Hub
     {
         private readonly SignalREventBus _hubEventBus;
@@ -21,13 +24,21 @@ namespace Common.SignalR.ClientMonitors
         //连接
         public override async Task OnConnectedAsync()
         {
-            await _hubEventBus.Raise(new OnConnectedEvent(this)).ConfigureAwait(false);
+            var s = this.TryGetHttpContext().Request.QueryString.ToString();
+            Trace.WriteLine("[_AnyHub] OnConnectedAsync >>>>>>>> " + s);
+            //[13704] [_AnyHub] OnConnectedAsync >>>>>>>> ?scopeId=s1&clientId=c2&id=gMop-YWYX7zbRWdqJOhyig
+
+           await _hubEventBus.Raise(new OnConnectedEvent(this)).ConfigureAwait(false);
             await base.OnConnectedAsync().ConfigureAwait(false);
         }
 
         //断开
         public override async Task OnDisconnectedAsync(Exception exception)
         {
+            var s = this.TryGetHttpContext().Request.QueryString.ToString();
+            Trace.WriteLine("[_AnyHub] OnDisconnectedAsync >>>>>>>> " + s);
+            //[13704][_AnyHub] OnDisconnectedAsync >>>>>>>> ?scopeId=s1&clientId=c2&id=gMop-YWYX7zbRWdqJOhyig
+
             var reason = exception == null ? "" : exception.Message;
             await _hubEventBus.Raise(new OnDisconnectedEvent(this, reason)).ConfigureAwait(false);
             await base.OnDisconnectedAsync(exception).ConfigureAwait(false);
@@ -53,7 +64,7 @@ namespace Common.SignalR.ClientMonitors
         }
 
         //Scope的上下文切换
-        public Task ChangeScope(ChangeScope args)
+        public Task ChangeScope(ChangeScopeArgs args)
         {
             return _hubEventBus.Raise(new ChangeScopeEvent(this, args));
         }
