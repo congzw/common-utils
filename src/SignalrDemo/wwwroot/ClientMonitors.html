@@ -13,7 +13,9 @@
 <body>
     <div class="wrapper" id="app">
         <div class="container">
-            <h2>Message: <span>  {{ currentMessage }}</span></h2>
+            <h2>ScopeId: <span>  {{ currentScopeId }}</span></h2>
+            <h2>ClientId: <span>  {{ currentClientId }}</span></h2>
+            <h2>State: <span>  {{ currentState }}</span></h2>
             <h2>State: <span>  {{ currentState }}</span></h2>
             <hr />
             <div class="select-bar">
@@ -92,103 +94,121 @@
             </transition>
         </div>
     </div>
-    <script type="text/javascript">
-        var app = new Vue({
-            el: '#app',
-            data: {
-                clientConnections: [],
-                currentMessage: 'Hello',
-                currentState: 'Foo',
-                isTableLayout: true // 默认表格布局
-            },
-            created: function () {
-                this.connect();
-            },
-            mounted: function () {
-            },
-            computed: {
-                changeLayoutText() {
-                    if (this.isTableLayout) {
-                        return 'table布局';
-                    } else {
-                        return 'panel布局';
-                    }
-                }
-            },
-            methods: {
-                updateMessage: function (args) {
-                    console.log('call updateMessage', args);
-                    this.currentMessage = args.message;
-                },
-                updateState: function (args) {
-                    console.log('call updateState', args);
-                    this.currentState = args.state;
-                },
-                updateConnections: function (args) {
-                    console.log('call updateConnections', args);
-                    if (args.clientConnections) {
-                        this.clientConnections = args.clientConnections;
-                    }
-                },
-                connect: function () {
-                    var _this = this;
+<script type="text/javascript">
 
-                    var sceneId = "sceneId";
-                    var clientId = "clientMonitor";
-                    var hubName = "DemoHub";
-                    var invokeClientStub = "InvokeClientStub";
+    function TryGetParams(name, defaultValue) {
+        var sPageURL = window.location.search.substring(1);
+        var sURLVariables = sPageURL.split('&');
+        for (var i = 0; i < sURLVariables.length; i++) {
+            var sParameterName = sURLVariables[i].split('=');
+            if (sParameterName[0] === name) {
+                return sParameterName[1];
+            }
+        }
+        return defaultValue;
+    };
 
-                    var connectionHub = new signalR.HubConnectionBuilder()
-                        .withUrl('/' + hubName + '?sceneId=' + sceneId + '&clientId=' + clientId)
-                        .build();
-                    
-                    connectionHub.on(invokeClientStub, function (theArgs) {
-                        console.log('callback: ' + invokeClientStub, theArgs);
-                        if (theArgs.method) {
-                            _this[theArgs.method](theArgs.methodArgs);
-                        }
-                        //todo update _this.clientConnections;
-                    });
-
-                    connectionHub.start()
-                        .then(function () {
-                            console.log("与服务器连接成功");
-                            document.getElementById('btnUpdate').addEventListener('click', function (event) {
-
-                                var ticks = ((new Date().getTime() * 10000) + 621355968000000000);
-                                var theArgs = {
-                                    method: "updateMessage",
-                                    methodArgs: { message: '[' + ticks + ']' },
-                                    bags: {
-                                        foo: "foo"
-                                    }
-                                };
-                                connectionHub.invoke(invokeClientStub, theArgs);
-                                event.preventDefault();
-                            });
-                            document.getElementById('btnUpdateState').addEventListener('click', function (event) {
-
-                                var ticks = ((new Date().getTime() * 10000) + 621355968000000000);
-                                var theArgs = {
-                                    method: "updateState",
-                                    methodArgs: { state: '<' + ticks + '>' },
-                                    bags: {
-                                        bar: "bar"
-                                    }
-                                };
-                                connectionHub.invoke(invokeClientStub, theArgs);
-                                event.preventDefault();
-                            });
-                        })
-                        .catch(error => {
-                            console.error(error.message);
-                        });
-                },
-                changeLayout(layoutName) {
-                    this.isTableLayout = !this.isTableLayout;
+    var app = new Vue({
+        el: '#app',
+        data: {
+            clientConnections: [],
+            currentMessage: 'Hello',
+            currentState: 'Foo',
+            currentScopeId: '',
+            currentClientId: '',
+            isTableLayout: true // 默认表格布局
+        },
+        created: function () {
+            this.connect();
+        },
+        mounted: function () {
+        },
+        computed: {
+            changeLayoutText() {
+                if (this.isTableLayout) {
+                    return 'table布局';
+                } else {
+                    return 'panel布局';
                 }
             }
-        })
-    </script>
+        },
+        methods: {
+            updateMessage: function (args) {
+                console.log('call updateMessage', args);
+                this.currentMessage = args.message;
+            },
+            updateState: function (args) {
+                console.log('call updateState', args);
+                this.currentState = args.state;
+            },
+            updateConnections: function (args) {
+                console.log('call updateConnections', args);
+                if (args.clientConnections) {
+                    this.clientConnections = args.clientConnections;
+                }
+            },
+            connect: function () {
+                var _this = this;
+
+                var scopeId = TryGetParams("scopeId", "s1");
+                var clientId = TryGetParams("clientId", "c1");
+                this.currentScopeId = scopeId;
+                this.currentClientId = clientId;
+                
+                var hubName = "DemoHub";
+                var invokeClientStub = "InvokeClientStub";
+
+                var connectionHub = new signalR.HubConnectionBuilder()
+                    .withUrl('/' + hubName + '?scopeId=' + scopeId + '&clientId=' + clientId)
+                    .build();
+                    
+                connectionHub.on(invokeClientStub, function (theArgs) {
+                    console.log('callback: ' + invokeClientStub, theArgs);
+                    if (theArgs.method) {
+                        _this[theArgs.method](theArgs.methodArgs);
+                    }
+                    //todo update _this.clientConnections;
+                });
+
+                connectionHub.start()
+                    .then(function () {
+                        console.log("与服务器连接成功");
+                        document.getElementById('btnUpdate').addEventListener('click', function (event) {
+
+                            var ticks = ((new Date().getTime() * 10000) + 621355968000000000);
+                            var theArgs = {
+                                method: "updateMessage",
+                                methodArgs: { message: '[' + ticks + ']' },
+                                bags: {
+                                    foo: "foo"
+                                }
+                            };
+                            connectionHub.invoke(invokeClientStub, theArgs);
+                            event.preventDefault();
+                        });
+                        document.getElementById('btnUpdateState').addEventListener('click', function (event) {
+
+                            var ticks = ((new Date().getTime() * 10000) + 621355968000000000);
+                            var theArgs = {
+                                method: "updateState",
+                                methodArgs: { state: '<' + ticks + '>' },
+                                bags: {
+                                    bar: "bar"
+                                }
+                            };
+                            connectionHub.invoke(invokeClientStub, theArgs);
+                            event.preventDefault();
+                        });
+                    })
+                    .catch(error => {
+                        console.error(error.message);
+                    });
+            },
+            changeLayout(layoutName) {
+                this.isTableLayout = !this.isTableLayout;
+            }
+        }
+    })
+</script>
 </body>
 </html>
