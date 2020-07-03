@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -91,5 +92,13 @@ namespace Common
             return propInfo.GetValue(model, null);
         }
 
+    }
+
+    public class BagsHelper
+    {
+        public static IDictionary<string, object> Create()
+        {
+            return new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        }
     }
 }
