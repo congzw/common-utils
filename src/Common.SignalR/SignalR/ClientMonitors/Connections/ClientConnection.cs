@@ -14,7 +14,6 @@ namespace Common.SignalR.ClientMonitors.Connections
         public ClientConnection()
         {
             //Groups = new List<string>();
-            ScopeId = ScopeContext.Current.ScopeId;
             var now = GetDateNow();
             CreateAt = now;
             LastUpdateAt = now;

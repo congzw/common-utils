@@ -63,11 +63,11 @@ namespace Common.SignalR.ClientMonitors
             return _hubEventBus.Raise(new RemoveFromGroupEvent(this, args));
         }
 
-        //Scope的上下文切换
-        public Task ChangeScope(ChangeScopeArgs args)
-        {
-            return _hubEventBus.Raise(new ChangeScopeEvent(this, args));
-        }
+        ////Scope的上下文切换
+        //public Task ChangeScope(ChangeScopeArgs args)
+        //{
+        //    return _hubEventBus.Raise(new ChangeScopeEvent(this, args));
+        //}
         
         //代表客户端的方法调用，供同步页面等场景使用
         public Task ClientMethodInvoke(ClientMethodInvoke args)
