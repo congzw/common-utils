@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 
 namespace Common.SignalR.ClientMonitors.ClientStubs
 {
@@ -33,10 +35,18 @@ namespace Common.SignalR.ClientMonitors.ClientStubs
             }
 
             var theEvent = (InvokeClientStubEvent)@event;
-            //await _clientMethodInvokeBus.Process(theEvent.Args).ConfigureAwait(false);
 
-            //todo const
-            await theEvent.RaiseHub.Clients.All.SendAsync("InvokeClientStub", theEvent.Args);
+            var hubClients = theEvent.TryGetHubClients();
+            //var proxy = hubClients.GetClientProxy("", new List<string>());
+            //IClientProxy clientProxy = hubClients.Clients(new List<string>());
+            //hubClients.Clients("");
+            
+            Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", "InvokeClientStub", JsonConvert.SerializeObject(theEvent.Args, Formatting.None)));
+            await hubClients.All.SendAsync("InvokeClientStub", theEvent.Args);
+
+            ////await _clientMethodInvokeBus.Process(theEvent.Args).ConfigureAwait(false);
+            ////todo
+            //await theEvent.RaiseHub.Clients.All.SendAsync("InvokeClientStub", theEvent.Args);
         }
     }
 }

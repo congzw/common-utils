@@ -16,7 +16,6 @@
             <h2>ScopeId: <span>  {{ currentScopeId }}</span></h2>
             <h2>ClientId: <span>  {{ currentClientId }}</span></h2>
             <h2>State: <span>  {{ currentState }}</span></h2>
-            <h2>State: <span>  {{ currentState }}</span></h2>
             <hr />
             <div class="select-bar">
                 <div class="select-label">筛选：</div>
@@ -156,18 +155,26 @@
                 this.currentClientId = clientId;
                 
                 var hubName = "DemoHub";
-                var invokeClientStub = "InvokeClientStub";
-
                 var connectionHub = new signalR.HubConnectionBuilder()
                     .withUrl('/' + hubName + '?scopeId=' + scopeId + '&clientId=' + clientId)
                     .build();
-                    
+
+                var invokeClientStub = "InvokeClientStub";
                 connectionHub.on(invokeClientStub, function (theArgs) {
                     console.log('callback: ' + invokeClientStub, theArgs);
                     if (theArgs.method) {
                         _this[theArgs.method](theArgs.methodArgs);
                     }
-                    //todo update _this.clientConnections;
+                    //todo more
+                });
+
+                var clientMethodInvoke = "ClientMethodInvoke";
+                connectionHub.on(clientMethodInvoke, function (theArgs) {
+                    console.log('callback: ' + clientMethodInvoke, theArgs);
+                    if (theArgs.method) {
+                        _this[theArgs.method](theArgs.methodArgs);
+                    }
+                    //todo more
                 });
 
                 connectionHub.start()

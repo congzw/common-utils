@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace Common.SignalR
 {
-    public interface ISignalREvent
+    public interface ISignalREvent //: IScopeKey, IHaveBags
     {
         /// <summary>
         /// 触发事件的时间
