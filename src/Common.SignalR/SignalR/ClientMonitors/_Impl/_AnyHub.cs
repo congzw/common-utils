@@ -137,7 +137,11 @@ namespace Common.SignalR.ClientMonitors
                 invokeCount++;
             }
             this.Context.Items[invokeCountKey] = invokeCount;
-
+            
+            //基于hub的所有方法调用，都能拿到基于当前的上下文信息参数Query
+            //[10664] [_AnyHub] InvokeClientStub >>>>>>>> ?scopeId=s1&clientId=c1&id=hB1kQwNfvF9bu-Tp_cSaig
+            //[10664] [_AnyHub] KickClient >>>>>>>> ?scopeId=s1&clientId=c1&id=hB1kQwNfvF9bu-Tp_cSaig
+            
             //Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, this.Context.ConnectionId));
             Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, this.TryGetHttpContext().Request.QueryString));
             //Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, JsonConvert.SerializeObject(this.Context.Items, Formatting.None)));
