@@ -206,6 +206,24 @@
                             connectionHub.invoke(invokeClientStub, theArgs);
                             event.preventDefault();
                         });
+                        
+                        document.getElementById('btnUpdateConnections').addEventListener('click', function (event) {
+
+                            var ticks = ((new Date().getTime() * 10000) + 621355968000000000);
+                            var theArgs = {
+                                method: "btnUpdateConnections",
+                                methodArgs: { state: '<' + ticks + '>' },
+                                bags: {
+                                    bar: "bar"
+                                }
+                            };
+                            
+                            //connectionHub.invoke(invokeClientStub, theArgs);
+                            connectionHub.invoke("KickClient", theArgs);
+                            event.preventDefault();
+                        });
+
+
                     })
                     .catch(error => {
                         console.error(error.message);

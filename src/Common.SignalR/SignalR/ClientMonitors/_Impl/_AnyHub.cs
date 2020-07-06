@@ -55,7 +55,6 @@ namespace Common.SignalR.ClientMonitors
         }
     }
 
-    [MyAttribute]
     public class _AnyHub : Hub
     {
         private readonly SignalREventBus _hubEventBus;
@@ -91,6 +90,7 @@ namespace Common.SignalR.ClientMonitors
         //踢掉（管理场景）
         public async Task KickClient(KickClient args)
         {
+            TraceHubContext("KickClient");
             await _hubEventBus.Raise(new KickClientEvent(this, args)).ConfigureAwait(false);
             await base.OnConnectedAsync().ConfigureAwait(false);
         }
@@ -138,14 +138,9 @@ namespace Common.SignalR.ClientMonitors
             }
             this.Context.Items[invokeCountKey] = invokeCount;
 
-            Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, this.Context.ConnectionId));
+            //Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, this.Context.ConnectionId));
             Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, this.TryGetHttpContext().Request.QueryString));
-            Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, JsonConvert.SerializeObject(this.Context.Items, Formatting.None)));
+            //Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, JsonConvert.SerializeObject(this.Context.Items, Formatting.None)));
         }
-    }
-
-    public class MyAttribute : Attribute
-    {
-
     }
 }
