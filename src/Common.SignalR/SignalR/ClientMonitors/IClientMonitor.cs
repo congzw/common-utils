@@ -2,7 +2,7 @@
 
 namespace Common.SignalR.ClientMonitors
 {
-    public interface IClientMonitor : IClientConnectionManager//, IScopeGroupManager, IClientGroupManager, IClientMethodManager, IClientStubManager
+    public interface IClientMonitor : IClientConnectionManager//, IScopeManager, IScopeGroupManager, IClientGroupManager, IClientMethodManager, IClientStubManager
     {
     }
 }
