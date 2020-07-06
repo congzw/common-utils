@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Common.SignalR.ClientMonitors;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Common.SignalR.EventBus
@@ -58,51 +59,53 @@ namespace Common.SignalR.EventBus
     #endregion
 
     #region base events
-    
-    public abstract class BaseHubEvent : IHubEvent
+
+    public class ScopedHubEvent : IHubEvent, IHubContextEvent
     {
-        protected BaseHubEvent(Hub raiseHub, string scopeId)
+        #region ctors
+
+        public ScopedHubEvent(Hub raiseHub, string scopeId)
         {
+            //来自HUB内部的请求，自动修正ScopeId
             if (string.IsNullOrWhiteSpace(scopeId))
             {
-                throw new ArgumentNullException(nameof(scopeId));
+                scopeId = raiseHub.GetCurrentScope();
+                if (string.IsNullOrWhiteSpace(scopeId))
+                {
+                    throw new ArgumentNullException(nameof(scopeId));
+                }
             }
             ScopeId = scopeId;
             RaiseAt = DateHelper.Instance.GetDateNow();
             RaiseHub = raiseHub;
         }
 
-        public DateTime RaiseAt { get; private set; }
-        public Hub RaiseHub { get; private set; }
-        public string ScopeId { get; set; }
-        public IDictionary<string, object> Bags { get; set; } = BagsHelper.Create();
-    }
-
-    public abstract class BaseHubCrossEvent : IHubEvent, IHubContextEvent
-    {
-        protected BaseHubCrossEvent(Hub raiseHub, string scopeId)
+        public ScopedHubEvent(HubContextWrapper context, string scopeId)
         {
             if (string.IsNullOrWhiteSpace(scopeId))
             {
                 throw new ArgumentNullException(nameof(scopeId));
             }
-            ScopeId = scopeId;
-            RaiseAt = DateHelper.Instance.GetDateNow();
-            RaiseHub = raiseHub;
-        }
-        protected BaseHubCrossEvent(HubContextWrapper context, string scopeId)
-        {
-            ScopeId = scopeId;
             RaiseAt = DateHelper.Instance.GetDateNow();
             Context = context;
         }
 
-        public string ScopeId { get; set; }
-        public DateTime RaiseAt { get; }
-        public IDictionary<string, object> Bags { get; set; } = BagsHelper.Create();
+        #endregion
 
+        public string ScopeId { get; set; }
+        public IDictionary<string, object> Bags { get; set; }
+        public DateTime RaiseAt { get; }
         public Hub RaiseHub { get; }
         public HubContextWrapper Context { get; }
+
+        public bool IsCalledFromHub()
+        {
+            return RaiseHub != null;
+        }
+        public bool IsCalledOutsideHub()
+        {
+            return !IsCalledFromHub();
+        }
         public IHubClients<IClientProxy> TryGetHubCallerClients()
         {
             if (RaiseHub != null)
@@ -110,11 +113,6 @@ namespace Common.SignalR.EventBus
                 return RaiseHub.Clients;
             }
             return Context.Clients;
-        }
-
-        public bool IsCalledFromHub()
-        {
-            return RaiseHub != null;
         }
     }
     

@@ -12,18 +12,15 @@ namespace Common.SignalR.ClientMonitors.ClientStubs
         string Method { get; set; }
     }
 
-    public interface IInvokeClientStub
-    {
-        //todo add some spec by need
-    }
 
-    public class InvokeClientStub : IInvokeClientStub, IHaveBags
+    public class InvokeClientStub : IScopeKey, IHaveBags
     {
         public InvokeClientStub()
         {
             Bags = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
+        public string ScopeId { get; set; }
         public string Method { get; set; }
         public object MethodArgs { get; set; }
         public IDictionary<string, object> Bags { get; set; }
@@ -32,5 +29,6 @@ namespace Common.SignalR.ClientMonitors.ClientStubs
         {
             return new InvokeClientStub() { Method = method, MethodArgs = methodArgs};
         }
+
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common.Http;
+using Common.SignalR.EventBus;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 
@@ -13,7 +14,7 @@ namespace Common.SignalR
         {
             return hub?.Context?.GetHttpContext();
         }
-        
+
         public static string TryGetScopeId(this Hub hub)
         {
             return hub?.TryGetHttpContext().TryGetQueryParameterValue(HubConst.Args_ScopeId, HubConst.DefaultScopeId);
@@ -28,6 +29,16 @@ namespace Common.SignalR
         {
             //return hub?.TryGetHttpContext().TryGetQueryParameterValue(HubConst.Args_Id, string.Empty);
             return hub.Context.ConnectionId;
+        }
+
+        public static T AutoFixScopeId<T>(this T args, Hub hub) where T : IScopeKey
+        {
+            if (string.IsNullOrWhiteSpace(args.ScopeId))
+            {
+                args.ScopeId = hub.TryGetScopeId();
+            }
+
+            return args;
         }
 
         public static IHubClients<IClientProxy> TryGetHubClients(this ISignalREvent theEvent)
@@ -80,7 +91,7 @@ namespace Common.SignalR
         {
             return null;
         }
-        
+
         public static IClientProxy ScopeClients(this IHubClients<IClientProxy> hubClients, string scope, IEnumerable<string> clientIds)
         {
             return null;

@@ -13,7 +13,7 @@ namespace Common.SignalR.ClientMonitors.Connections
 
     #region events
     
-    //public class ScopeResetEvent : BaseHubCrossEvent
+    //public class ScopeResetEvent : ScopedHubEvent
     //{
     //    public ScopeContext Args { get; }
 
@@ -28,7 +28,7 @@ namespace Common.SignalR.ClientMonitors.Connections
     //    }
     //}
 
-    //public class ScopeUpdateEvent : BaseHubCrossEvent
+    //public class ScopeUpdateEvent : ScopedHubEvent
     //{
     //    public ScopeContext Args { get; set; }
 

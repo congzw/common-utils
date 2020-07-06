@@ -6,6 +6,7 @@ using Common.SignalR.ClientMonitors.ClientGroups;
 using Common.SignalR.ClientMonitors.ClientMethods;
 using Common.SignalR.ClientMonitors.ClientStubs;
 using Common.SignalR.ClientMonitors.Connections;
+using Common.SignalR.EventBus;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 
@@ -16,7 +17,7 @@ namespace Common.SignalR.ClientMonitors
 
     public static class HubExtensions
     {
-        public static string GetCurrentScope(this Hub hub)
+        public static string GetCurrentScope<THub>(this THub hub) where THub : Hub
         {
             if (hub == null)
             {
@@ -40,19 +41,30 @@ namespace Common.SignalR.ClientMonitors
             return hub.Context.Items[HubConst.Args_ScopeId] as string;
         }
 
-        public static void FixCurrentScope(this Hub hub, string scope = null)
+        public static THub FixScopeIdForContext<THub>(this THub hub, string scopeId = null) where THub : Hub
         {
             if (hub == null)
             {
                 throw new ArgumentNullException(nameof(hub));
             }
 
-            if (string.IsNullOrWhiteSpace(scope))
+            if (string.IsNullOrWhiteSpace(scopeId))
             {
-                scope = hub.TryGetHttpContext().TryGetQueryParameterValue(HubConst.Args_ScopeId, HubConst.DefaultScopeId);
+                scopeId = hub.TryGetHttpContext().TryGetQueryParameterValue(HubConst.Args_ScopeId, HubConst.DefaultScopeId);
             }
-            hub.Context.Items[HubConst.Args_ScopeId] = scope;
+            hub.Context.Items[HubConst.Args_ScopeId] = scopeId;
+            return hub;
         }
+
+        public static THub FixScopeIdForArgs<THub>(this THub hub, IScopeKey args) where THub : Hub
+        {
+            if (string.IsNullOrWhiteSpace(args.ScopeId))
+            {
+                args.ScopeId = hub.GetCurrentScope();
+            }
+            return hub;
+        }
+
     }
 
     public class _AnyHub : Hub
@@ -68,7 +80,7 @@ namespace Common.SignalR.ClientMonitors
         //连接
         public override async Task OnConnectedAsync()
         {
-            this.FixCurrentScope();
+            this.FixScopeIdForContext();
             TraceHubContext("OnConnectedAsync");
             //[13704] [_AnyHub] OnConnectedAsync >>>>>>>> ?scopeId=s1&clientId=c2&id=gMop-YWYX7zbRWdqJOhyig
 
@@ -79,6 +91,7 @@ namespace Common.SignalR.ClientMonitors
         //断开
         public override async Task OnDisconnectedAsync(Exception exception)
         {
+            this.FixScopeIdForContext();
             TraceHubContext("OnDisconnectedAsync");
             //[13704][_AnyHub] OnDisconnectedAsync >>>>>>>> ?scopeId=s1&clientId=c2&id=gMop-YWYX7zbRWdqJOhyig
 
@@ -90,6 +103,8 @@ namespace Common.SignalR.ClientMonitors
         //踢掉（管理场景）
         public async Task KickClient(KickClient args)
         {
+            this.FixScopeIdForContext().FixScopeIdForArgs(args);
+
             TraceHubContext("KickClient");
             await _hubEventBus.Raise(new KickClientEvent(this, args)).ConfigureAwait(false);
             await base.OnConnectedAsync().ConfigureAwait(false);
@@ -98,6 +113,7 @@ namespace Common.SignalR.ClientMonitors
         //加入组成员
         public Task AddToGroup(AddToGroup args)
         {
+            this.FixScopeIdForContext().FixScopeIdForArgs(args);
             return _hubEventBus.Raise(new AddToGroupEvent(this, args));
         }
 
@@ -116,6 +132,7 @@ namespace Common.SignalR.ClientMonitors
         //代表客户端的方法调用，供同步页面等场景使用
         public Task ClientMethodInvoke(ClientMethodInvoke args)
         {
+            this.FixScopeIdForContext().FixScopeIdForArgs(args);
             TraceHubContext("ClientMethodInvoke");
             return _hubEventBus.Raise(new ClientMethodInvokeEvent(this, args));
         }
@@ -123,6 +140,7 @@ namespace Common.SignalR.ClientMonitors
         //代表从服务器端的方法调用，供数据通知等场景使用
         public Task InvokeClientStub(InvokeClientStub args)
         {
+            this.FixScopeIdForContext().FixScopeIdForArgs(args);
             TraceHubContext("InvokeClientStub");
             return _hubEventBus.Raise(new InvokeClientStubEvent(this, args));
         }

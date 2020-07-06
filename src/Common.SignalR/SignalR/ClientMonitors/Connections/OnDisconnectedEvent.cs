@@ -1,19 +1,20 @@
 ﻿using System.Threading.Tasks;
+using Common.SignalR.EventBus;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Common.SignalR.ClientMonitors.Connections
 {
-    public class OnDisconnectedEvent : BaseHubEvent
+    public class OnDisconnectedEvent : ScopedHubEvent
     {
         public string Reason { get; set; }
 
-        public OnDisconnectedEvent(Hub raiseHub, string reason) : base(raiseHub)
+        public OnDisconnectedEvent(Hub raiseHub, string reason) : base(raiseHub, raiseHub.TryGetScopeId())
         {
             Reason = reason;
         }
     }
 
-    public class OnDisconnectedEventHandler : IHubEventHandler
+    public class OnDisconnectedEventHandler : ISignalREventHandler
     {
         private readonly IClientMonitor _manager;
 

@@ -1,25 +1,26 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
+using Common.SignalR.EventBus;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 
 namespace Common.SignalR.ClientMonitors.ClientStubs
 {
-    public class InvokeClientStubEvent : BaseHubCrossEvent
+    public class InvokeClientStubEvent : ScopedHubEvent
     {
         public InvokeClientStub Args { get; set; }
 
-        public InvokeClientStubEvent(Hub raiseHub, InvokeClientStub args) : base(raiseHub)
+        public InvokeClientStubEvent(Hub raiseHub, InvokeClientStub args) : base(raiseHub, args.ScopeId)
         {
             Args = args;
         }
 
-        public InvokeClientStubEvent(HubContextWrapper context, InvokeClientStub args) : base(context)
+        public InvokeClientStubEvent(HubContextWrapper context, InvokeClientStub args) : base(context, args.ScopeId)
         {
             Args = args;
         }
     }
-    public class InvokeClientStubEventHandler : IHubCrossEventHandler
+    public class InvokeClientStubEventHandler : ISignalREventHandler
     {
         public float HandleOrder { get; set; }
         public bool ShouldHandle(ISignalREvent @event)

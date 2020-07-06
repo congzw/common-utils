@@ -3,6 +3,7 @@ using Common.DependencyInjection;
 using Common.SignalR.ClientMonitors;
 using Common.SignalR.ClientMonitors.ClientMethods;
 using Common.SignalR.ClientMonitors.Connections;
+using Common.SignalR.EventBus;
 using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable CheckNamespace
