@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Common.SignalR
 {
-    public class ScopeContext : IScopeKey, IHaveBags
+    public class ScopeContext : IHaveBags
     {
         public string ScopeId { get; set; }
         public IDictionary<string, object> Bags { get; set; } = BagsHelper.Create();
