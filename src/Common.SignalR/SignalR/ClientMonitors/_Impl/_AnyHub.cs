@@ -67,6 +67,19 @@ namespace Common.SignalR.ClientMonitors
 
     }
 
+    public interface IScopeHub
+    {
+        Task OnConnectedAsync();
+        Task OnDisconnectedAsync(Exception exception);
+        Task KickClient(KickClient args);
+
+        Task AddToGroup(AddToGroup args);
+        Task RemoveFromGroup(RemoveFromGroup args);
+
+        Task InvokeClientStub(InvokeClientStub args);
+        Task ClientMethodInvoke(ClientMethodInvoke args);
+    }
+    
     public class _AnyHub : Hub
     {
         private readonly SignalREventBus _hubEventBus;
@@ -82,7 +95,6 @@ namespace Common.SignalR.ClientMonitors
         {
             this.FixScopeIdForContext();
             TraceHubContext("OnConnectedAsync");
-            //[13704] [_AnyHub] OnConnectedAsync >>>>>>>> ?scopeId=s1&clientId=c2&id=gMop-YWYX7zbRWdqJOhyig
 
             await _hubEventBus.Raise(new OnConnectedEvent(this)).ConfigureAwait(false);
             await base.OnConnectedAsync().ConfigureAwait(false);
@@ -93,7 +105,6 @@ namespace Common.SignalR.ClientMonitors
         {
             this.FixScopeIdForContext();
             TraceHubContext("OnDisconnectedAsync");
-            //[13704][_AnyHub] OnDisconnectedAsync >>>>>>>> ?scopeId=s1&clientId=c2&id=gMop-YWYX7zbRWdqJOhyig
 
             var reason = exception == null ? "" : exception.Message;
             await _hubEventBus.Raise(new OnDisconnectedEvent(this, reason)).ConfigureAwait(false);
@@ -104,8 +115,8 @@ namespace Common.SignalR.ClientMonitors
         public async Task KickClient(KickClient args)
         {
             this.FixScopeIdForContext().FixScopeIdForArgs(args);
-
             TraceHubContext("KickClient");
+
             await _hubEventBus.Raise(new KickClientEvent(this, args)).ConfigureAwait(false);
             await base.OnConnectedAsync().ConfigureAwait(false);
         }
@@ -140,7 +151,7 @@ namespace Common.SignalR.ClientMonitors
         //代表从服务器端的方法调用，供数据通知等场景使用
         public Task InvokeClientStub(InvokeClientStub args)
         {
-            this.FixScopeIdForContext().FixScopeIdForArgs(args);
+            this.FixScopeIdForArgs(args);
             TraceHubContext("InvokeClientStub");
             return _hubEventBus.Raise(new InvokeClientStubEvent(this, args));
         }
@@ -155,11 +166,13 @@ namespace Common.SignalR.ClientMonitors
                 invokeCount++;
             }
             this.Context.Items[invokeCountKey] = invokeCount;
-            
+
             //基于hub的所有方法调用，都能拿到基于当前的上下文信息参数Query
-            //[10664] [_AnyHub] InvokeClientStub >>>>>>>> ?scopeId=s1&clientId=c1&id=hB1kQwNfvF9bu-Tp_cSaig
+            //[13704] [_AnyHub] OnConnectedAsync >>>>>>>> ?scopeId=s1&clientId=c2&id=gMop-YWYX7zbRWdqJOhyig
+            //[13704] [_AnyHub] OnDisconnectedAsync >>>>>>>> ?scopeId=s1&clientId=c2&id=gMop-YWYX7zbRWdqJOhyig
             //[10664] [_AnyHub] KickClient >>>>>>>> ?scopeId=s1&clientId=c1&id=hB1kQwNfvF9bu-Tp_cSaig
-            
+            //[10664] [_AnyHub] InvokeClientStub >>>>>>>> ?scopeId=s1&clientId=c1&id=hB1kQwNfvF9bu-Tp_cSaig
+
             //Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, this.Context.ConnectionId));
             Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, this.TryGetHttpContext().Request.QueryString));
             //Trace.WriteLine(string.Format("[_AnyHub] {0} >>>>>>>> {1}", method, JsonConvert.SerializeObject(this.Context.Items, Formatting.None)));
