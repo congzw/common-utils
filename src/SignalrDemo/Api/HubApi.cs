@@ -31,12 +31,18 @@ namespace SignalrDemo.Api
         
         [Route("ClientStub")]
         [HttpGet]
-        public async Task<string> ClientStub(InvokeClientStub args)
+        public async Task<string> ClientStub([FromQuery]InvokeClientStub args)
         {
             if (string.IsNullOrWhiteSpace(args.ScopeId))
             {
                 return "BAD SCOPE!";
             }
+
+            //for demo!
+            args.Method = "updateMessage";
+            args.SetBagValue("foo", "From Server foo");
+            args.MethodArgs = new { message = "From Server message" };
+
             await _bus.Raise(new InvokeClientStubEvent(_hubContext.AsHubContextWrapper(), args));
             return "OK";
         }
