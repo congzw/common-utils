@@ -88,5 +88,15 @@ namespace Common.DI
                 Assert.IsNull(theFoo);
             }
         }
+
+        [TestMethod]
+        public void Ignore_Should_Ok()
+        {
+            using (var scope = provider.CreateScope())
+            {
+                var theFoo = scope.ServiceProvider.GetService<FooIgnore>();
+                Assert.IsNull(theFoo);
+            }
+        }
     }
 }

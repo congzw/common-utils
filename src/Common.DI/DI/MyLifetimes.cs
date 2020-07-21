@@ -19,4 +19,9 @@ namespace Common
     {
 
     }
+
+    //escape from IMyLifetime auto register
+    public interface IMyLifetimeIgnore
+    {
+    }
 }

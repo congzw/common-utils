@@ -63,6 +63,11 @@ namespace Common.DI
 
     }
 
+    public class FooIgnore : IMyTransient, IMyLifetimeIgnore
+    {
+
+    }
+
     public class Foo
     {
 

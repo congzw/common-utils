@@ -17,6 +17,7 @@ namespace Common.DI
             var lifetimeSingletonType = typeof(IMySingleton);
             var lifetimeScopedType = typeof(IMyScoped);
             var lifetimeTransientType = typeof(IMyTransient);
+            var lifetimeIgnoreType = typeof(IMyLifetimeIgnore);
 
             var theAssemblies = specificAssemblies;
             if (specificAssemblies == null)
@@ -46,6 +47,11 @@ namespace Common.DI
                     && t != lifetimeSingletonType
                     && t != lifetimeScopedType
                     && t != lifetimeTransientType).ToList();
+
+                if (lifetimeIgnoreType.IsAssignableFrom(autoBindType))
+                {
+                    continue;
+                }
                 
                 if (lifetimeSingletonType.IsAssignableFrom(autoBindType))
                 {
