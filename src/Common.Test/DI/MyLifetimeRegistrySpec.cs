@@ -5,25 +5,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Common.DI
 {
     [TestClass]
-    public class MyLifetimesAutoRegisterSpec
+    public class MyLifetimeRegistrySpec
     {
-        static IServiceCollection services;
-        static IServiceProvider provider;
+        private static IServiceProvider provider;
         [ClassInitialize]
         public static void AutoRegisterTestInitialize(TestContext testContext)
         {
-            services = new ServiceCollection();
-            MyLifetimesAutoRegister.AutoBind(services, new[] {
+            var services = new ServiceCollection();
+            MyLifetimeRegistry.Instance.AutoRegister(services, new[] {
                 typeof(IMyLifetime).Assembly,
-                typeof(MyLifetimesAutoRegisterSpec).Assembly
+                typeof(MyLifetimeRegistrySpec).Assembly
             });
-
-            provider = services.BuildServiceProvider();
-        }
-
-        [TestInitialize]
-        public void MethodInitialize()
-        {
             provider = services.BuildServiceProvider();
         }
 
@@ -83,8 +75,7 @@ namespace Common.DI
                 Assert.AreNotSame(theOne, theOne2);
             }
         }
-
-
+        
         [TestMethod]
         public void NotAutoBind_Should_Ok()
         {
@@ -108,18 +99,18 @@ namespace Common.DI
         [TestMethod]
         public void AfterReplace_Should_Ok()
         {
-            services = new ServiceCollection();
-            
-            MyLifetimesAutoRegister.AutoBind(services, new[] {
+            var services = new ServiceCollection();
+
+            var myLifetimesHelper = new MyLifetimeRegistry();
+            myLifetimesHelper.AutoRegister(services, new[] {
                 typeof(IMyLifetime).Assembly,
-                typeof(MyLifetimesAutoRegisterSpec).Assembly
+                typeof(MyLifetimeRegistrySpec).Assembly
             });
 
             services.AddSingleton<FooTransient>();
+            var newProvider = services.BuildServiceProvider();
 
-            provider = services.BuildServiceProvider();
-
-            using (var scope = provider.CreateScope())
+            using (var scope = newProvider.CreateScope())
             {
                 var theFoo = scope.ServiceProvider.GetService<FooTransient>();
                 var theFoo2 = scope.ServiceProvider.GetService<FooTransient>();
@@ -130,18 +121,19 @@ namespace Common.DI
         [TestMethod]
         public void BeforeRegistered_Should_Ok()
         {
-            services = new ServiceCollection();
+            var newServices = new ServiceCollection();
 
-            services.AddSingleton<FooTransient>();
+            newServices.AddSingleton<FooTransient>();
 
-            MyLifetimesAutoRegister.AutoBind(services, new[] {
+            var myLifetimesHelper = new MyLifetimeRegistry();
+            myLifetimesHelper.AutoRegister(newServices, new[] {
                 typeof(IMyLifetime).Assembly,
-                typeof(MyLifetimesAutoRegisterSpec).Assembly
+                typeof(MyLifetimeRegistrySpec).Assembly
             });
             
-            provider = services.BuildServiceProvider();
+            var newProvider = newServices.BuildServiceProvider();
 
-            using (var scope = provider.CreateScope())
+            using (var scope = newProvider.CreateScope())
             {
                 var theFoo = scope.ServiceProvider.GetService<FooTransient>();
                 var theFoo2 = scope.ServiceProvider.GetService<FooTransient>();
