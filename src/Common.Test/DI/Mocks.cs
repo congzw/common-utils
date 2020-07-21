@@ -38,7 +38,12 @@ namespace Common.DI
         }
     }
 
-    public class FooSingleton : LifetimeDesc, IMySingletonDesc
+    public interface IFooSingleton : IMySingletonDesc
+    {
+
+    }
+
+    public class FooSingleton : LifetimeDesc, IFooSingleton
     {
 
     }

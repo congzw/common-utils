@@ -55,8 +55,6 @@ namespace Common.DI
                 
                 if (lifetimeSingletonType.IsAssignableFrom(autoBindType))
                 {
-                    //bind self
-                    services.TryAddSingleton(autoBindType);
                     Type firstServiceInterface = null;
                     foreach (var serviceInterface in serviceInterfaces)
                     {
@@ -64,6 +62,9 @@ namespace Common.DI
                         {
                             services.TryAddSingleton(serviceInterface, autoBindType);
                             firstServiceInterface = serviceInterface;
+
+                            //bind self
+                            services.TryAddSingleton(autoBindType, sp => sp.GetService(serviceInterface));
                         }
                         else
                         {
@@ -76,8 +77,6 @@ namespace Common.DI
 
                 if (lifetimeScopedType.IsAssignableFrom(autoBindType))
                 {
-                    //bind self
-                    services.TryAddScoped(autoBindType);
                     Type firstServiceInterface = null;
                     foreach (var serviceInterface in serviceInterfaces)
                     {
@@ -85,6 +84,8 @@ namespace Common.DI
                         {
                             services.TryAddScoped(serviceInterface, autoBindType);
                             firstServiceInterface = serviceInterface;
+                            //bind self
+                            services.TryAddScoped(autoBindType, sp => sp.GetService(serviceInterface));
                         }
                         else
                         {
@@ -95,7 +96,8 @@ namespace Common.DI
                     continue;
                 }
 
-                //default bind
+                //"IMyTransient" and "IMyLifetime" will use IMyTransient
+                //bind self
                 services.TryAddTransient(autoBindType);
                 foreach (var serviceInterface in serviceInterfaces)
                 {
