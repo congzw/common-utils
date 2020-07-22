@@ -48,14 +48,14 @@ namespace Common.DI
                 if (lifetimeSingletonType.IsAssignableFrom(autoBindType))
                 {
                     //bind self
-                    services.TryAddSingleton(autoBindType);
+                    services.AddSingleton(autoBindType);
                     AddIfNotExist(autoBindType, autoBindType);
 
                     foreach (var serviceInterface in serviceInterfaces)
                     {
                         if (!IgnoreServiceInterfaces.Contains(serviceInterface))
                         {
-                            services.TryAddSingleton(serviceInterface, sp => sp.GetService(autoBindType));
+                            services.AddSingleton(serviceInterface, sp => sp.GetService(autoBindType));
                             AddIfNotExist(autoBindType, serviceInterface);
                         }
                     }
@@ -65,14 +65,14 @@ namespace Common.DI
                 if (lifetimeScopedType.IsAssignableFrom(autoBindType))
                 {
                     //bind self
-                    services.TryAddScoped(autoBindType);
+                    services.AddScoped(autoBindType);
                     AddIfNotExist(autoBindType, autoBindType);
 
                     foreach (var serviceInterface in serviceInterfaces)
                     {
                         if (!IgnoreServiceInterfaces.Contains(serviceInterface))
                         {
-                            services.TryAddScoped(serviceInterface, sp => sp.GetService(autoBindType));
+                            services.AddScoped(serviceInterface, sp => sp.GetService(autoBindType));
                             AddIfNotExist(autoBindType, serviceInterface);
                         }
                     }
@@ -81,14 +81,14 @@ namespace Common.DI
 
                 //"IMyTransient" and "IMyLifetime" will use IMyTransient
                 //bind self
-                services.TryAddTransient(autoBindType);
+                services.AddTransient(autoBindType);
                 AddIfNotExist(autoBindType, autoBindType);
 
                 foreach (var serviceInterface in serviceInterfaces)
                 {
                     if (!IgnoreServiceInterfaces.Contains(serviceInterface))
                     {
-                        services.TryAddTransient(serviceInterface, autoBindType);
+                        services.AddTransient(serviceInterface, autoBindType);
                         AddIfNotExist(autoBindType, serviceInterface);
                     }
                 }

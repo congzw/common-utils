@@ -117,7 +117,7 @@ namespace Common.DI
         }
 
         [TestMethod]
-        public void AfterReplace_Should_Ok()
+        public void RegisterAfter_Should_Replace()
         {
             var services = new ServiceCollection();
 
@@ -129,29 +129,6 @@ namespace Common.DI
 
             services.AddSingleton<FooTransient>();
             var newProvider = services.BuildServiceProvider();
-
-            using (var scope = newProvider.CreateScope())
-            {
-                var theFoo = scope.ServiceProvider.GetService<FooTransient>();
-                var theFoo2 = scope.ServiceProvider.GetService<FooTransient>();
-                Assert.AreSame(theFoo, theFoo2);
-            }
-        }
-
-        [TestMethod]
-        public void BeforeRegistered_Should_Ok()
-        {
-            var newServices = new ServiceCollection();
-
-            newServices.AddSingleton<FooTransient>();
-
-            var myLifetimesHelper = new MyLifetimeRegistry();
-            myLifetimesHelper.AutoRegister(newServices, new[] {
-                typeof(IMyLifetime).Assembly,
-                typeof(MyLifetimeRegistrySpec).Assembly
-            });
-            
-            var newProvider = newServices.BuildServiceProvider();
 
             using (var scope = newProvider.CreateScope())
             {
