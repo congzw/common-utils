@@ -45,15 +45,17 @@ namespace Common
                 loopTask.AfterExitLoopAction = mockTask.MockStopAction;
 
                 loopTask.Start();
-                Task.Delay(TimeSpan.FromMilliseconds(50 * loopCount + 20)).Wait();
+                Task.Delay(TimeSpan.FromMilliseconds(50 + 20)).Wait();
 
                 loopTask.Stop();
                 Task.Delay(TimeSpan.FromMilliseconds(50 * 2)).Wait();
 
                 mockTask.StopInvoked.ShouldTrue();
             }
-            (mockTask.InvokeCount >= 4).ShouldTrue();
-            (mockTask.InvokeCount <= 5).ShouldTrue();
+
+            mockTask.InvokeCount.Log();
+            (mockTask.InvokeCount >= 1).ShouldTrue();
+            (mockTask.InvokeCount <= 2).ShouldTrue();
             mockTask.StopInvoked.ShouldTrue();
         }
     }
@@ -72,7 +74,7 @@ namespace Common
             mockTask.MockAction = () =>
             {
                 mockTask.InvokeCount++;
-                AssertHelper.WriteLine("task running at: " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss:fff"));
+                AssertHelper.WriteLine("task invoking at: " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss:fff"));
             };
 
             mockTask.MockStopAction = () =>
