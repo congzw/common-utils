@@ -3,10 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.DependencyModel;
 
 namespace Common.DI
 {
@@ -20,32 +18,18 @@ namespace Common.DI
             IgnoreServiceInterfaces.Add(typeof(IDisposable));
         }
 
-        public void AutoRegister(IServiceCollection services, IEnumerable<Assembly> specificAssemblies = null)
+        public void AutoRegister(IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (assemblies == null) throw new ArgumentNullException(nameof(assemblies));
+
             var lifetimeType = typeof(IMyLifetime);
             var lifetimeSingletonType = typeof(IMySingleton);
             var lifetimeScopedType = typeof(IMyScoped);
             var lifetimeTransientType = typeof(IMyTransient);
             var lifetimeIgnoreType = typeof(IMyLifetimeIgnore);
 
-            var theAssemblies = specificAssemblies;
-            if (specificAssemblies == null)
-            {
-                var allLibs = DependencyContext.Default.CompileLibraries;
-                var theLibs = allLibs.Where(x => !x.Name.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase)
-                                                      && !x.Name.StartsWith("System.", StringComparison.OrdinalIgnoreCase));
-                theAssemblies = theLibs.Select(lib =>
-                {
-                    try
-                    {
-                        return AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(lib.Name));
-                    }
-                    catch (Exception) { return null; }
-                }
-                ).Where(x => x != null);
-            }
-
-            var autoBindTypes = theAssemblies.SelectMany(x =>
+            var autoBindTypes = assemblies.SelectMany(x =>
                     x.ExportedTypes.Where(t =>
                         lifetimeType.IsAssignableFrom(t)
                         && !lifetimeIgnoreType.IsAssignableFrom(t)
@@ -111,9 +95,6 @@ namespace Common.DI
             }
         }
 
-        public static MyLifetimeRegistry Instance = new MyLifetimeRegistry();
-
-
         private void AddIfNotExist(Type autoBindType, Type serviceInterface)
         {
             if (!RegisteredTypes.ContainsKey(autoBindType))
@@ -129,5 +110,7 @@ namespace Common.DI
                 }
             }
         }
+
+        public static MyLifetimeRegistry Instance = new MyLifetimeRegistry();
     }
 }

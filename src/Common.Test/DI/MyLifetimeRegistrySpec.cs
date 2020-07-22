@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -17,6 +19,24 @@ namespace Common.DI
                 typeof(MyLifetimeRegistrySpec).Assembly
             });
             provider = services.BuildServiceProvider();
+        }
+
+        [ExpectedException(typeof(ArgumentNullException))]
+        [TestMethod]
+        public void AssembliesNull_Should_Throws()
+        {
+            var services = new ServiceCollection();
+            var myLifetimeRegistry = new MyLifetimeRegistry();
+            myLifetimeRegistry.AutoRegister(services, null);
+        }
+
+
+        [ExpectedException(typeof(ArgumentNullException))]
+        [TestMethod]
+        public void ServicesNull_Should_Throws()
+        {
+            var myLifetimeRegistry = new MyLifetimeRegistry();
+            myLifetimeRegistry.AutoRegister(null, new List<Assembly>());
         }
 
         [TestMethod]
