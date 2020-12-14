@@ -8,42 +8,42 @@ namespace Common
     public class SimpleConstFieldSpec
     {
         [TestMethod]
-        public void ExportConstFields_Class_ShouldFind()
+        public void GetDescriptionItems_Class_ShouldFind()
         {
-            var constFieldValues = SimpleConstFieldHelper.Instance.GetConstFields(typeof(MockConst));
+            var constFieldValues = DescriptionItemHelper.Instance.GetDescriptionItems(typeof(MockConst));
             Show(constFieldValues);
             constFieldValues.Count.ShouldEqual(7);
         }
 
         [TestMethod]
-        public void ExportConstFields_Enum_ShouldFind()
+        public void GetDescriptionItems_Enum_ShouldFind()
         {
-            var constFieldValues = SimpleConstFieldHelper.Instance.GetConstFields(typeof(MockEnum));
+            var constFieldValues = DescriptionItemHelper.Instance.GetDescriptionItems(typeof(MockEnum));
             Show(constFieldValues);
             constFieldValues.Count.ShouldEqual(2);
         }
 
         [TestMethod]
-        public void ExportConstFields_Assembly_ShouldFind()
+        public void GetDescriptionItems_Assembly_ShouldFind()
         {
-            var constFieldValues = typeof(MockEnum).Assembly.ExportConstFields();
+            var constFieldValues = typeof(MockEnum).Assembly.GetDescriptionItems();
             Show(constFieldValues);
             constFieldValues.Count.ShouldEqual(7 + 2);
         }
 
         [TestMethod]
-        public void ExportConstFieldContents_Assembly_ShouldFind()
+        public void ExportDescriptionContents_Assembly_ShouldFind()
         {
-            var constFieldValues = typeof(MockEnum).Assembly.ExportConstFieldContents();
+            var constFieldValues = typeof(MockEnum).Assembly.ExportDescriptionContents();
             constFieldValues.Log();
 
-            Func<Type, SimpleConstFieldValue, string> formatter = (t, x) => string.Format("{0}, {1}, {2}, [{3}]", t?.FullName,
+            Func<Type, DescriptionItemValue, string> formatter = (t, x) => string.Format("{0}, {1}, {2}, [{3}]", t?.FullName,
                 x.FieldName, x.FieldValue, x.Description);
-            var constFieldValues2 = typeof(MockEnum).Assembly.ExportConstFieldContents(formatter);
+            var constFieldValues2 = typeof(MockEnum).Assembly.ExportDescriptionContents(formatter);
             constFieldValues2.Log();
         }
 
-        private void Show(IEnumerable<SimpleConstFieldValue> list)
+        private void Show(IEnumerable<DescriptionItemValue> list)
         {
             foreach (var constField in list)
             {
@@ -54,33 +54,33 @@ namespace Common
 
         public class MockConst
         {
-            [SimpleConstField(description: "PublicA")]
+            [DescriptionItem(description: "PublicA")]
             public string A { get; set; } = "AAA";
 
-            [SimpleConstField(description: "PublicStaticB")]
+            [DescriptionItem(description: "PublicStaticB")]
             public static string B { get; set; } = "BBB";
 
-            [SimpleConstField(description: "PrivateFieldC")]
+            [DescriptionItem(description: "PrivateFieldC")]
             private string C = "PrivateC";
 
-            [SimpleConstField(description: "PrivateStaticFieldD")]
+            [DescriptionItem(description: "PrivateStaticFieldD")]
             private static string D = "PrivateStaticD";
 
-            [SimpleConstField(description: "PublicStaticFieldE")]
+            [DescriptionItem(description: "PublicStaticFieldE")]
             private static string E = "PrivateStaticE";
 
-            [SimpleConstField(description: "PublicPropertyX")]
+            [DescriptionItem(description: "PublicPropertyX")]
             public string X { get; set; } = "XXX";
 
-            [SimpleConstField(description: "PublicPropertyY", Name = "Name_Y")]
+            [DescriptionItem(description: "PublicPropertyY", Name = "Name_Y")]
             public string Y { get; set; } = "YYY";
         }
 
         public enum MockEnum
         {
-            [SimpleConstField(description: "Desc_Enum_E1")]
+            [DescriptionItem(description: "Desc_Enum_E1")]
             E1 = 0,
-            [SimpleConstField(description: "Desc_Enum_E2", Name = "Name_E2")]
+            [DescriptionItem(description: "Desc_Enum_E2", Name = "Name_E2")]
             E2 = 1
         }
     }

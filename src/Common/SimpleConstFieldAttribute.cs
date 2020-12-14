@@ -12,20 +12,26 @@ namespace Common
     /// 通过反射查找系统内的所有常量Field
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class SimpleConstFieldAttribute : Attribute
+    public class DescriptionItemAttribute : Attribute
     {
-        public SimpleConstFieldAttribute(string description)
+        public DescriptionItemAttribute(string description)
         {
             Description = description;
         }
-
+        
+        /// <summary>
+        /// 名称
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// 说明
+        /// </summary>
         public string Description { get; set; }
     }
 
     #region dto
 
-    public class SimpleConstFieldValue
+    public class DescriptionItemValue
     {
         public string FieldName { get; set; }
         public string FieldValue { get; set; }
@@ -36,7 +42,7 @@ namespace Common
 
     #endregion
 
-    public class SimpleConstFieldHelper
+    public class DescriptionItemHelper
     {
         /// <summary>
         /// 导出信息
@@ -44,7 +50,7 @@ namespace Common
         /// <param name="constFieldValues"></param>
         /// <param name="formatter"></param>
         /// <returns></returns>
-        public string ExportConstFieldContents(IList<SimpleConstFieldValue> constFieldValues, Func<Type, SimpleConstFieldValue, string> formatter)
+        public string ExportDescriptionContents(IList<DescriptionItemValue> constFieldValues, Func<Type, DescriptionItemValue, string> formatter)
         {
             if (formatter == null)
             {
@@ -70,9 +76,9 @@ namespace Common
         /// </summary>
         /// <param name="classType"></param>
         /// <returns></returns>
-        public IList<SimpleConstFieldValue> GetConstFields(Type classType)
+        public IList<DescriptionItemValue> GetDescriptionItems(Type classType)
         {
-            var list = new List<SimpleConstFieldValue>();
+            var list = new List<DescriptionItemValue>();
 
             if (classType.IsEnum)
             {
@@ -80,11 +86,11 @@ namespace Common
                 foreach (var name in names)
                 {
                     var filedInfo = classType.GetField(name);
-                    var attributes = filedInfo.GetCustomAttributes(typeof(SimpleConstFieldAttribute), false);
+                    var attributes = filedInfo.GetCustomAttributes(typeof(DescriptionItemAttribute), false);
                     if (attributes.Length > 0)
                     {
-                        var att = (SimpleConstFieldAttribute)attributes[0];
-                        var enumFiledValue = new SimpleConstFieldValue { Description = att.Description };
+                        var att = (DescriptionItemAttribute)attributes[0];
+                        var enumFiledValue = new DescriptionItemValue { Description = att.Description };
 
                         enumFiledValue.FieldName = !string.IsNullOrEmpty(att.Name)
                             ? att.Name
@@ -106,10 +112,10 @@ namespace Common
 
                 foreach (var memberInfo in memberInfos)
                 {
-                    var customAttributes = memberInfo.GetCustomAttributes(typeof(SimpleConstFieldAttribute), false);
+                    var customAttributes = memberInfo.GetCustomAttributes(typeof(DescriptionItemAttribute), false);
                     if (customAttributes.Length > 0)
                     {
-                        var att = (SimpleConstFieldAttribute)customAttributes[0];
+                        var att = (DescriptionItemAttribute)customAttributes[0];
                         if (memberInfo is FieldInfo fieldInfo)
                         {
                             var fieldValue = SimpleConstFieldValue(classType, att, fieldInfo);
@@ -127,17 +133,23 @@ namespace Common
             return list;
         }
 
-        public bool ContainsConstFiled(Type theType, string value)
+        /// <summary>
+        /// 是否包含声明
+        /// </summary>
+        /// <param name="theType"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool ContainsDescriptionItem(Type theType, string value)
         {
-            var userTypeCodes = GetConstFields(theType)
+            var userTypeCodes = GetDescriptionItems(theType)
                 .Select(x => x.FieldValue).ToList();
             bool contains = userTypeCodes.Contains(value, StringComparer.OrdinalIgnoreCase);
             return contains;
         }
 
-        private static SimpleConstFieldValue SimpleConstFieldValue(Type classType, SimpleConstFieldAttribute att, PropertyInfo propInfo)
+        private static DescriptionItemValue SimpleConstFieldValue(Type classType, DescriptionItemAttribute att, PropertyInfo propInfo)
         {
-            var fieldValue = new SimpleConstFieldValue { Description = att.Description, FromType = classType };
+            var fieldValue = new DescriptionItemValue { Description = att.Description, FromType = classType };
 
             fieldValue.FieldName = !string.IsNullOrEmpty(att.Name)
                 ? att.Name
@@ -155,9 +167,9 @@ namespace Common
 
             return fieldValue;
         }
-        private static SimpleConstFieldValue SimpleConstFieldValue(Type classType, SimpleConstFieldAttribute att, FieldInfo propInfo)
+        private static DescriptionItemValue SimpleConstFieldValue(Type classType, DescriptionItemAttribute att, FieldInfo propInfo)
         {
-            var fieldValue = new SimpleConstFieldValue { Description = att.Description, FromType = classType };
+            var fieldValue = new DescriptionItemValue { Description = att.Description, FromType = classType };
 
             fieldValue.FieldName = !string.IsNullOrEmpty(att.Name)
                 ? att.Name
@@ -176,24 +188,35 @@ namespace Common
             return fieldValue;
         }
 
-        public static SimpleConstFieldHelper Instance = new SimpleConstFieldHelper();
+        public static DescriptionItemHelper Instance = new DescriptionItemHelper();
     }
 
     public static class AssemblyExtensionsConstField
     {
-        public static string ExportConstFieldContents(this Assembly assembly, Func<Type, SimpleConstFieldValue, string> formatter = null)
+        /// <summary>
+        /// 导出某个程序集的所有声明信息
+        /// </summary>
+        /// <param name="assembly"></param>
+        /// <param name="formatter"></param>
+        /// <returns></returns>
+        public static string ExportDescriptionContents(this Assembly assembly, Func<Type, DescriptionItemValue, string> formatter = null)
         {
-            var exportConstFields = assembly.ExportConstFields();
-            return SimpleConstFieldHelper.Instance.ExportConstFieldContents(exportConstFields, formatter);
+            var exportConstFields = assembly.GetDescriptionItems();
+            return DescriptionItemHelper.Instance.ExportDescriptionContents(exportConstFields, formatter);
         }
 
-        public static IList<SimpleConstFieldValue> ExportConstFields(this Assembly assembly)
+        /// <summary>
+        /// 获取某个程序集的所有声明信息
+        /// </summary>
+        /// <param name="assembly"></param>
+        /// <returns></returns>
+        public static IList<DescriptionItemValue> GetDescriptionItems(this Assembly assembly)
         {
-            var nbConstFieldValues = new List<SimpleConstFieldValue>();
+            var nbConstFieldValues = new List<DescriptionItemValue>();
             var types = assembly.GetTypes();
             foreach (var type in types)
             {
-                var theFieldValues = SimpleConstFieldHelper.Instance.GetConstFields(type);
+                var theFieldValues = DescriptionItemHelper.Instance.GetDescriptionItems(type);
                 nbConstFieldValues.AddRange(theFieldValues);
             }
 
@@ -201,19 +224,26 @@ namespace Common
         }
 
         /// <summary>
-        /// 获取某个类型声明的所有的信息
+        /// 获取某个类型的所有声明信息
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static IList<SimpleConstFieldValue> GetConstFields<T>(this SimpleConstFieldHelper helper)
+        public static IList<DescriptionItemValue> GetDescriptionItems<T>(this DescriptionItemHelper helper)
         {
             var classType = typeof(T);
-            return helper.GetConstFields(classType);
+            return helper.GetDescriptionItems(classType);
         }
 
-        public static bool ContainsConstFiled<T>(this SimpleConstFieldHelper helper, string value)
+        /// <summary>
+        /// 检测是否包含声明
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="helper"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool ContainsDescriptionItem<T>(this DescriptionItemHelper helper, string value)
         {
-            return helper.ContainsConstFiled(typeof(T), value);
+            return helper.ContainsDescriptionItem(typeof(T), value);
         }
 
     }
